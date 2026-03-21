@@ -1,0 +1,126 @@
+/* pages/question/question.wxss */
+.question-page {
+  min-height: 100vh;
+  background-color: var(--bg-page, #f5f5f5);
+  padding: 32rpx;
+  padding-bottom: 200rpx;
+}
+
+/* 进度区域 */
+.progress-section {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.progress-text {
+  font-size: 28rpx;
+  color: var(--text-secondary, #666);
+}
+
+/* 题目内容 */
+.question-content {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.question-text {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--text-primary, #1a1f36);
+  line-height: 1.6;
+  margin-bottom: 40rpx;
+  text-align: center;
+}
+
+/* 选项列表 */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 24rpx;
+  border: 2rpx solid var(--border-light, #e0e0e0);
+  border-radius: 16rpx;
+  background-color: var(--bg-page, #f5f5f5);
+  transition: all 0.2s ease;
+}
+
+.option-item:active {
+  background-color: var(--bg-input, #e8e8e8);
+}
+
+.option-item.selected {
+  border-color: var(--primary, #0052D9);
+  background-color: rgba(0, 82, 217, 0.1);
+}
+
+.option-letter {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-card, #ffffff);
+  border-radius: 50%;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+  margin-right: 20rpx;
+  border: 2rpx solid var(--border-light, #e0e0e0);
+}
+
+.option-item.selected .option-letter {
+  background-color: var(--primary, #0052D9);
+  color: #ffffff;
+  border-color: var(--primary, #0052D9);
+}
+
+.option-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: var(--text-primary, #1a1f36);
+}
+
+/* 提交按钮 */
+.submit-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background-color: var(--bg-card, #ffffff);
+  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 结果弹窗图标 */
+.result-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16rpx;
+}
+
+.result-icon.success {
+  color: #00A870;
+}
+
+.result-icon.error {
+  color: #FF5252;
+}

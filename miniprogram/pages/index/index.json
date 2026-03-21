@@ -1,0 +1,12 @@
+{
+  "usingComponents": {
+    "page-wrapper": "/components/page-wrapper/index",
+    "t-progress": "tdesign-miniprogram/progress/progress",
+    "t-row": "tdesign-miniprogram/row/row",
+    "t-col": "tdesign-miniprogram/col/col",
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
+    "t-icon": "tdesign-miniprogram/icon/icon"
+  },
+  "navigationBarTitleText": "首页"
+}

@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "t-progress": "tdesign-miniprogram/progress/progress",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "t-icon": "tdesign-miniprogram/icon/icon"
+  },
+  "navigationBarTitleText": "答题",
+  "navigationBarBackgroundColor": "@navBgColor",
+  "navigationBarTextStyle": "@textColor"
+}

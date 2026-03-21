@@ -1,0 +1,78 @@
+<view class="container-wrap {{themeMode === 'auto' ? '' : (currentTheme === 'dark' ? 'theme-dark' : 'theme-light')}}">
+  <swiper
+    indicator-dots="{{false}}"
+    autoplay="{{false}}"
+    circular="{{false}}"
+    interval="3000"
+    duration="500"
+    class="page-swiper"
+    bindchange="onSwiperChange"
+    current="{{currentSwiperIndex}}">
+    <swiper-item>
+      <scroll-view scroll-y class="scroll-content">
+        <slot name="page-content"></slot>
+      </scroll-view>
+    </swiper-item>
+
+    <swiper-item>
+      <scroll-view scroll-y class="scroll-content">
+        <view class="game-status">
+          <view class="profile-card">
+            <view class="user-section">
+              <t-avatar class="avatar" shape="round" size="large" icon="user" />
+              <view class="user-details">
+                <view class="username">用户</view>
+                <view class="user-title">粤语达人</view>
+              </view>
+            </view>
+
+            <view class="stats-row">
+              <view class="stat-item">
+                <view class="stat-value">12小时</view>
+                <view class="stat-title">总游戏时长</view>
+              </view>
+              <view class="stat-item">
+                <view class="stat-value">80</view>
+                <view class="stat-title">完成题目</view>
+              </view>
+              <view class="stat-item">
+                <view class="stat-value completion-rate">30%</view>
+                <view class="stat-title">正确率</view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="settings-section">
+          <view class="settings-card">
+            <view class="setting-item" bind:tap="onThemeSettingTap">
+              <view class="setting-left">
+                <view class="setting-icon theme-icon">
+                  <t-icon name="{{currentTheme === 'dark' ? 'mode-dark' : 'mode-light'}}" size="48rpx" color="inherit" />
+                </view>
+                <text class="setting-label">外观模式</text>
+              </view>
+              <view class="setting-right">
+                <text class="setting-value">{{themeModeText}}</text>
+                <view class="arrow-icon">›</view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="logout-section">
+          <t-button theme="danger" variant="light" size="large" block bind:tap="onLogout" class="logout-btn">
+            退出登录
+          </t-button>
+        </view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+
+  <custom-tab-bar
+    pageIcon="{{pageIcon}}"
+    pageText="{{pageText}}"
+    swiperIndex="{{currentSwiperIndex}}"
+    bind:swiperchange="onTabBarSwiperChange"
+  />
+
+  <t-action-sheet visible="{{showThemeSheet}}" items="{{themeOptions}}" bind:selected="onThemeSelect" bind:cancel="onThemeSheetClose" bind:close="onThemeSheetClose" />
+</view>

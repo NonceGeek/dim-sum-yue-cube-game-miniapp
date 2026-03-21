@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/index/index",
+     "pages/scene/scene",
+     "pages/question/question"
+  ],
+  "window": {
+    "navigationBarTitleText": "粤玩粤醒",
+    "navigationBarBackgroundColor": "@navBgColor",
+    "navigationBarTextStyle": "@textColor",
+    "backgroundColor": "@backgroundColor"
+  },
+  "componentFramework": "glass-easel",
+  "lazyCodeLoading": "requiredComponents",
+  "darkmode": true,
+  "themeLocation": "theme.json"
+}

@@ -1,0 +1,13 @@
+{
+  "component": true,
+  "usingComponents": {
+    "custom-tab-bar": "/components/custom-tab-bar/index",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-avatar": "tdesign-miniprogram/avatar/avatar",
+    "t-action-sheet": "tdesign-miniprogram/action-sheet/action-sheet",
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-progress": "tdesign-miniprogram/progress/progress"
+  }
+}

@@ -1,0 +1,202 @@
+/* components/page-wrapper/index.wxss */
+.page-swiper {
+  width: 100%;
+  height: 100vh;
+}
+
+swiper-item {
+  height: 100%;
+}
+
+.scroll-content {
+  height: 100%;
+  width: 100%;
+  padding-bottom: 140rpx;
+  box-sizing: border-box;
+}
+
+/* action-sheet弹出框显示在custom-dots之上 */
+t-action-sheet,
+t-action-sheet .t-popup {
+  z-index: 100 !important;
+}
+
+/* 个人中心预览样式 */
+.game-status {
+  background: var(--gradient-primary);
+}
+
+.profile-card {
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding-bottom: 32rpx;
+  margin-bottom: 16rpx;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+/* 强制t-avatar圆形 */
+.user-section .t-avatar {
+  border-radius: 50% !important;
+  overflow: hidden;
+}
+
+.user-section .t-avatar > view,
+.user-section .t-avatar .t-icon {
+  border-radius: 50% !important;
+}
+
+.username {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8rpx;
+}
+
+.user-title {
+  font-size: 28rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24rpx;
+  background: var(--bg-card);
+  padding: 24rpx;
+  border-radius: 16rpx;
+  border: 1px solid var(--border-light);
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-height: 54rpx;
+  line-height: 54rpx;
+}
+
+.stat-title {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #888;
+}
+
+/* Settings Section */
+.settings-section {
+  padding: 0 32rpx;
+  flex: 1;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 20rpx;
+  padding-left: 8rpx;
+}
+
+.settings-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx;
+  transition: background-color 0.2s ease;
+}
+
+.setting-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.setting-item-hover {
+  background-color: var(--bg-input);
+}
+
+.setting-item:active {
+  background-color: var(--bg-input);
+}
+
+.setting-left {
+  display: flex;
+  align-items: center;
+}
+
+.setting-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.theme-icon {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+}
+
+.setting-label {
+  font-size: 30rpx;
+  color: var(--text-primary);
+}
+
+.setting-right {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.setting-value {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.arrow-icon {
+  font-size: 32rpx;
+  color: var(--text-muted);
+}
+
+/* Logout Section */
+.logout-section {
+  padding: 40rpx 32rpx;
+  margin-top: auto;
+}
+
+.logout-btn {
+  width: 100%;
+  --td-button-large-height: 96rpx;
+}
+
+.t-cell {
+  margin-bottom: 16rpx;
+  border-bottom: none !important;
+}
+
+

@@ -1,0 +1,42 @@
+
+
+.custom-tab-bar-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* 自定义指示点 */
+.custom-dots {
+  position: fixed;
+  bottom: 200rpx;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx 0;
+  gap: 16rpx;
+  background-color: transparent;
+  z-index: 100;
+}
+
+.dot {
+  width: 16rpx;
+  height: 16rpx;
+  background-color: #ccc;
+  border-radius: 50%;
+  opacity: 0.6;
+  transform: scale(1);
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.dot.active {
+  width: 40rpx;
+  background: linear-gradient(135deg, #4a7cf3 0%, #7c5cff 100%);
+  opacity: 1;
+  transform: scale(1);
+  border-radius: 8rpx;
+}

@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "page-wrapper": "/components/page-wrapper/index",
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group"
+  },
+  "navigationBarTitleText": "选择场景"
+}

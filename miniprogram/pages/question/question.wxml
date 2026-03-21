@@ -1,0 +1,49 @@
+<!-- 答题页面 -->
+<view class="question-page" pageIcon="{{pageIcon}}" pageText="{{pageText}}">
+  <!-- 顶部进度 -->
+  <view class="progress-section">
+    <view class="progress-info">
+      <text class="progress-text">第 {{currentIndex + 1}} 题 / 共 {{totalCount}} 题</text>
+    </view>
+    <t-progress percentage="{{progressPercent}}" color="{{ { from: '#0052D9', to: '#00A870' } }}" stroke-width="12rpx" />
+  </view>
+
+  <!-- 题目内容 -->
+  <view class="question-content">
+    <view class="question-text">{{currentQuestion.text}}</view>
+
+    <!-- 选项列表 -->
+    <view class="options-list">
+      <view
+        wx:for="{{currentQuestion.options}}"
+        wx:key="index"
+        class="option-item {{selectedIndex === index ? 'selected' : ''}}"
+        bind:tap="onOptionSelect"
+        data-index="{{index}}"
+      >
+        <view class="option-letter">{{['A', 'B', 'C', 'D'][index]}}</view>
+        <view class="option-text">{{item}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <t-button theme="primary" size="large" block bind:tap="onSubmit" disabled="{{selectedIndex === null}}">
+      提交答案
+    </t-button>
+  </view>
+
+  <!-- 结果弹窗 -->
+  <t-dialog
+    visible="{{showResultDialog}}"
+    title="{{isCorrect ? '回答正确' : '回答错误'}}"
+    content="{{resultMessage}}"
+    confirm-btn-variant="light"
+    bind:confirm="onResultConfirm"
+  >
+    <view slot="icon" class="result-icon {{isCorrect ? 'success' : 'error'}}">
+      <t-icon name="{{isCorrect ? 'check-circle' : 'close-circle'}}" size="96rpx" />
+    </view>
+  </t-dialog>
+</view>

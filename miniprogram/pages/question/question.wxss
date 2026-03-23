@@ -29,98 +29,300 @@
 
 /* 题目内容 */
 .question-content {
-  background-color: var(--bg-card, #ffffff);
-  border-radius: 24rpx;
-  padding: 40rpx 32rpx;
   margin-bottom: 32rpx;
-  box-shadow: var(--shadow-sm);
 }
 
-.question-text {
+/* 倒计时 */
+.count-down {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 场景标题 */
+.scene-title {
+  padding: 0 32rpx 24rpx 0;
+  color: var(--text-primary);
   font-size: 36rpx;
   font-weight: 600;
-  color: var(--text-primary, #1a1f36);
-  line-height: 1.6;
-  margin-bottom: 40rpx;
-  text-align: center;
 }
 
-/* 选项列表 */
-.options-list {
+/* 对话卡片 */
+.dialogue-card {
+  margin: 0 32rpx 32rpx;
+  background: var(--bg-card);
+  border-radius: 24rpx;
+  box-shadow: var(--shadow-sm);
+  border: 2rpx solid var(--border-light);
+  overflow: hidden;
+}
+
+/* 对话容器 */
+.dialogue-container {
+  padding: 32rpx;
   display: flex;
   flex-direction: column;
   gap: 24rpx;
 }
 
-.option-item {
+.sound-right {
+  align-self: flex-end;
+}
+
+.dialogue-item {
   display: flex;
   align-items: center;
-  padding: 28rpx 24rpx;
-  border: 2rpx solid var(--border-light, #e0e0e0);
-  border-radius: 16rpx;
-  background-color: var(--bg-page, #f5f5f5);
-  transition: all 0.2s ease;
+  gap: 24rpx;
 }
 
-.option-item:active {
-  background-color: var(--bg-input, #e8e8e8);
+.dialogue-item.left {
+  flex-direction: row;
+  padding-left: 16rpx;
 }
 
-.option-item.selected {
-  border-color: var(--primary, #0052D9);
-  background-color: rgba(0, 82, 217, 0.1);
+.dialogue-item.right {
+  flex-direction: row-reverse;
+  padding-right: 16rpx;
 }
 
-.option-letter {
-  width: 56rpx;
-  height: 56rpx;
+.dialogue-icon {
+  width: 48rpx;
+  height: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-card, #ffffff);
-  border-radius: 50%;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: var(--text-secondary, #666);
-  margin-right: 20rpx;
-  border: 2rpx solid var(--border-light, #e0e0e0);
+  font-size: 40rpx;
+  flex-shrink: 0;
 }
 
-.option-item.selected .option-letter {
-  background-color: var(--primary, #0052D9);
-  color: #ffffff;
-  border-color: var(--primary, #0052D9);
-}
-
-.option-text {
+.dialogue-bubble {
   flex: 1;
-  font-size: 30rpx;
-  color: var(--text-primary, #1a1f36);
+  padding: 20rpx 32rpx;
+  background: var(--bg-input);
+  border-radius: 20rpx;
+  max-width: 75%;
 }
 
-/* 提交按钮 */
-.submit-section {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  background-color: var(--bg-card, #ffffff);
-  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05);
+.dialogue-item.left .dialogue-bubble {
+  border-top-left-radius: 8rpx;
+}
+
+.dialogue-item.right .dialogue-bubble {
+  border-top-right-radius: 8rpx;
+}
+
+.dialogue-text {
+  color: var(--text-primary);
+  font-size: 30rpx;
+  font-weight: 400;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 /* 结果弹窗图标 */
 .result-icon {
   display: flex;
   justify-content: center;
-  margin-bottom: 16rpx;
+  margin-bottom: 4rpx;
 }
 
 .result-icon.success {
-  color: #00A870;
+  color: var(--secondary);
 }
 
 .result-icon.error {
-  color: #FF5252;
+  color: var(--danger);
+}
+
+/* 提交按钮区域 */
+.submit-section {
+  padding: 32rpx;
+}
+
+/* 选项头像样式 */
+.option-avatar {
+  font-weight: 600 !important;
+  color: #fff !important;
+}
+
+/* 未选中状态 - 灰色背景 */
+.option-avatar {
+  background-color: var(--text-muted) !important;
+}
+
+/* 选中状态 - 主题色背景 */
+.option-avatar.selected {
+  background-color: var(--secondary) !important;
+}
+
+.audio-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.audio-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 12rpx 32rpx 32rpx;
+}
+
+/* 录音按钮 */
+.record-btn {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 0 20rpx;
+  min-height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  transition: all 0.2s ease;
+}
+
+.record-btn:active {
+  background-color: var(--border-light);
+}
+
+.record-btn.recording {
+  background: var(--success);
+  border-color: var(--success);
+  transform: scale(1.02);
+  box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.3);
+}
+
+.record-btn.recording .mic-icon {
+  color: #fff !important;
+}
+
+.record-btn.recording .record-text {
+  color: #fff;
+}
+
+.mic-icon {
+  color: var(--text-secondary) !important;
+  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+}
+
+.record-text {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.audio-icon {
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: 12rpx;
+}
+
+.ai-button {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 24rpx;
+}
+
+/* 取消按钮 - 深色模式朦胧效果，与 record-btn 一致 */
+.cancel-btn {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  position: relative;
+  border-radius: 999px !important;
+  margin-bottom: 0 !important;
+}
+
+.cancel-btn:active {
+  background-color: var(--border-light) !important;
+}
+
+/* 按钮选中时渐变边框，与 scene.wxml 的 cell-wrapper 一致 */
+.cancel-btn.active::before,
+.ai-button.active::before {
+  opacity: 1;
+  animation: gradient-move 1.5s linear infinite;
+  border-radius: 999px !important;
+}
+
+.image-container {
+  padding: 24rpx 32rpx;
+}
+
+/* 图片宽度100% */
+.img-full {
+  width: 100% !important;
+  height: 33.33vh !important;
+  object-fit: cover !important;
+}
+
+.image-info {
+  padding: 32rpx 32rpx 24rpx;
+  color: var(--text-primary);
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.count-down-container {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 24rpx;
+}
+
+/* 公共弹窗样式 */
+.result-dialog {
+  border-radius: 16rpx;
+  padding: 32rpx;
+  text-align: center;
+  background: var(--bg-card);
+}
+
+/* 正确状态 - 渐变边框 */
+.result-dialog.correct {
+  position: relative;
+  background: var(--gradient-subtitle);
+}
+
+.result-dialog.correct::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16rpx;
+  padding: 4rpx;
+  background: linear-gradient(135deg, #4a7cf3, #7c5cff, #4a7cf3);
+  background-size: 200% 200%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradient-move 1.5s linear infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.result-dialog.correct .result-icon t-icon {
+  color: var(--success);
+}
+
+.result-dialog.correct .t-dialog__header,
+.result-dialog.correct .t-dialog__body-text {
+  color: #fff !important;
+}
+
+/* 错误状态 */
+.result-dialog.wrong {
+  color: var(--text-muted) !important;
 }

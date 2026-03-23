@@ -1,49 +1,125 @@
 <!-- 答题页面 -->
-<view class="question-page" pageIcon="{{pageIcon}}" pageText="{{pageText}}">
+<page-wrapper class="question-page" pageIcon="{{pageIcon}}" pageText="{{pageText}}">
   <!-- 顶部进度 -->
-  <view class="progress-section">
-    <view class="progress-info">
-      <text class="progress-text">第 {{currentIndex + 1}} 题 / 共 {{totalCount}} 题</text>
-    </view>
-    <t-progress percentage="{{progressPercent}}" color="{{ { from: '#0052D9', to: '#00A870' } }}" stroke-width="12rpx" />
-  </view>
-
-  <!-- 题目内容 -->
-  <view class="question-content">
-    <view class="question-text">{{currentQuestion.text}}</view>
-
-    <!-- 选项列表 -->
-    <view class="options-list">
-      <view
-        wx:for="{{currentQuestion.options}}"
-        wx:key="index"
-        class="option-item {{selectedIndex === index ? 'selected' : ''}}"
-        bind:tap="onOptionSelect"
-        data-index="{{index}}"
-      >
-        <view class="option-letter">{{['A', 'B', 'C', 'D'][index]}}</view>
-        <view class="option-text">{{item}}</view>
+  <view slot="page-content">
+    <block wx:if="{{ scene !== 'image'}}">
+      <view class="progress-section">
+        <view class="progress-info">
+          <text class="progress-text">第 {{currentIndex + 1}} 题 / 共 {{totalCount}} 题</text>
+        </view>
+        <t-progress percentage="{{progressPercent}}" color="{{ { from: '#5d8cf5', to: '#9178ff' } }}"
+          stroke-width="12rpx" />
       </view>
-    </view>
-  </view>
 
-  <!-- 提交按钮 -->
-  <view class="submit-section">
-    <t-button theme="primary" size="large" block bind:tap="onSubmit" disabled="{{selectedIndex === null}}">
-      提交答案
-    </t-button>
-  </view>
+      <!-- 题目内容 -->
+      <!-- 语境填空 -->
+      <block wx:if="{{ scene === 'context' }}">
+        <view class="question-content">
+          <view class="count-down-container">
+            <view class="count-down">
+              <t-count-down time="{{ time }}" format="ss" bind:finish="onCountDownFinish" />s
+            </view>
+          </view>
+          <!-- 对话卡片 -->
+          <view class="dialogue-card">
+            <view class="dialogue-container">
+              <!-- 场景标题 -->
+              <view class="scene-title">场景：{{currentQuestion.scene}}</view>
+              <block wx:for="{{currentQuestion.dialogueLines}}" wx:key="index">
+                <view class="dialogue-item {{item.role === 'user' ? 'right' : 'left'}}">
+                  <view class="dialogue-icon">
+                    <t-avatar class="avatar" t-class="square-avatar" shape="round" size="small">{{item.icon}}</t-avatar>
+                  </view>
+                  <view class="dialogue-bubble">
+                    <view class="dialogue-text">{{item.text}}</view>
+                  </view>
+                </view>
+              </block>
+            </view>
+          </view>
 
-  <!-- 结果弹窗 -->
-  <t-dialog
-    visible="{{showResultDialog}}"
-    title="{{isCorrect ? '回答正确' : '回答错误'}}"
-    content="{{resultMessage}}"
-    confirm-btn-variant="light"
-    bind:confirm="onResultConfirm"
-  >
-    <view slot="icon" class="result-icon {{isCorrect ? 'success' : 'error'}}">
-      <t-icon name="{{isCorrect ? 'check-circle' : 'close-circle'}}" size="96rpx" />
-    </view>
-  </t-dialog>
-</view>
+          <!-- 选项列表 -->
+          <t-cell-group class="custom-cell-group">
+            <view wx:for="{{currentQuestion.options}}" wx:key="index"
+              class="cell-wrapper {{selectedIndex === index ? 'active' : ''}}" bind:tap="onOptionSelect"
+              data-index="{{index}}">
+              <t-cell bordered="{{false}}" title="{{item.text}}" description="{{item.pronunciation}}" hover
+                class="custom-cell">
+                <t-avatar slot="left-icon" size="80rpx" shape="circle"
+                  t-class-content="option-avatar {{selectedIndex === index ? 'selected' : ''}}">
+                  {{['A', 'B', 'C', 'D'][index]}}
+                </t-avatar>
+              </t-cell>
+            </view>
+          </t-cell-group>
+        </view>
+      </block>
+
+
+      <!-- 识字辨音 -->
+      <block wx:if="{{ scene === 'sound' }}">
+        <view class="question-content">
+
+          <view class="dialogue-card">
+            <view class="dialogue-container">
+              <view class="scene-title">{{currentQuestion.text}}</view>
+              <view class="dialogue-item">{{currentQuestion.jyutping}}</view>
+              <!-- 点击之后换成sound -->
+              <t-icon name="sound-low" size="48rpx" color="inherit" class="sound-right" />
+            </view>
+          </view>
+          <view class="audio-controls">
+            <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
+              bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
+              <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon" />
+              <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
+            </view>
+          </view>
+
+          <view class="btn-group">
+            <t-button size="large" shape="round"
+              class="cancel-btn cell-wrapper {{selectedBtn === 'cancel' ? 'active' : ''}}" bind:tap="onBtnSelect"
+              data-btn="cancel">取消</t-button>
+            <t-button size="large" shape="round" class="ai-button cell-wrapper {{selectedBtn === 'ai' ? 'active' : ''}}"
+              bind:tap="onBtnSelect" data-btn="ai">AI评分</t-button>
+          </view>
+        </view>
+      </block>
+    </block>
+    <block wx:else>
+      <!-- 传图识音 -->
+      <view class="image-info">请点击拍照/上传</view>
+      <view class="image-container">
+        <t-image id="loading-img" mode="widthFix" shape="round" class="img-full" />
+      </view>
+
+      <view class="audio-controls">
+        <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
+          bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
+          <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon" />
+          <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
+        </view>
+      </view>
+
+
+      <view class="btn-group">
+        <t-button size="large" shape="round"
+          class="cancel-btn cell-wrapper {{selectedBtn === 'cancel' ? 'active' : ''}}" bind:tap="onBtnSelect"
+          data-btn="cancel">取消</t-button>
+        <t-button size="large" shape="round" class="ai-button cell-wrapper {{selectedBtn === 'ai' ? 'active' : ''}}"
+          bind:tap="onBtnSelect" data-btn="ai">AI评分</t-button>
+      </view>
+
+
+    </block>
+  </view>
+</page-wrapper>
+
+<!-- 结果弹窗 -->
+<t-dialog visible="{{showResultDialog}}" title="答题结果" content="{{resultMessage}}"
+  t-class="result-dialog {{isCorrect ? 'correct' : 'wrong'}}"
+  confirm-btn-variant="light" bind:confirm="onResultConfirm">
+  <view slot="top" class="result-icon {{isCorrect ? 'success' : 'error'}}">
+    <t-icon name="{{isCorrect ? 'check-circle' : 'close-circle'}}" size="48rpx" />
+  </view>
+</t-dialog>

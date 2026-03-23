@@ -1,11 +1,17 @@
 {
   "usingComponents": {
+    "page-wrapper": "/components/page-wrapper/index",
     "t-progress": "tdesign-miniprogram/progress/progress",
     "t-button": "tdesign-miniprogram/button/button",
     "t-dialog": "tdesign-miniprogram/dialog/dialog",
-    "t-icon": "tdesign-miniprogram/icon/icon"
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-cell": "tdesign-miniprogram/cell/cell",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
+    "t-avatar": "tdesign-miniprogram/avatar/avatar",
+    "t-image": "tdesign-miniprogram/image/image",
+    "t-count-down": "tdesign-miniprogram/count-down/count-down"
   },
-  "navigationBarTitleText": "答题",
+  "navigationBarTitleText": "答题环节",
   "navigationBarBackgroundColor": "@navBgColor",
   "navigationBarTextStyle": "@textColor"
 }

@@ -8,5 +8,7 @@
     "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "t-icon": "tdesign-miniprogram/icon/icon"
   },
-  "navigationBarTitleText": "首页"
+  "navigationBarTitleText": "首页",
+  "enableShareAppMessage": true,
+  "enableShareTimeline": true
 }

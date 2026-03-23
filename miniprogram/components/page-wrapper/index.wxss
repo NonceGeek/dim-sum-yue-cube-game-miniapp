@@ -46,17 +46,6 @@ t-action-sheet .t-popup {
   gap: 8rpx;
 }
 
-/* 强制t-avatar圆形 */
-.user-section .t-avatar {
-  border-radius: 50% !important;
-  overflow: hidden;
-}
-
-.user-section .t-avatar > view,
-.user-section .t-avatar .t-icon {
-  border-radius: 50% !important;
-}
-
 .username {
   font-size: 36rpx;
   font-weight: 600;
@@ -68,36 +57,6 @@ t-action-sheet .t-popup {
   font-size: 28rpx;
   color: #fff;
   font-weight: 500;
-}
-
-.stats-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24rpx;
-  background: var(--bg-card);
-  padding: 24rpx;
-  border-radius: 16rpx;
-  border: 1px solid var(--border-light);
-}
-
-.stat-item {
-  text-align: center;
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: var(--text-primary);
-  min-height: 54rpx;
-  line-height: 54rpx;
-}
-
-.stat-title {
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #888;
 }
 
 /* Settings Section */
@@ -199,4 +158,46 @@ t-action-sheet .t-popup {
   border-bottom: none !important;
 }
 
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24rpx;
+  background: var(--bg-card);
+  padding: 24rpx;
+  border-radius: 16rpx;
+  border: 1px solid var(--border-light);
+}
 
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stats {
+  padding: 0 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-card {
+  padding: 24rpx;
+  text-align: center;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 16rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-height: 54rpx;
+  line-height: 54rpx;
+}
+
+.stat-title {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #888;
+}

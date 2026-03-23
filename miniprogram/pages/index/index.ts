@@ -63,7 +63,18 @@ Page({
   /**
    * 用户点击右上角分享
    */
-  onShareAppMessage() {},
+  onShareAppMessage() {
+    return {
+      title: "粤玩粤醒",
+      path: "/pages/index/index",
+    };
+  },
+  onShareTimeline() {
+    return {
+      title: "粤玩粤醒",
+      path: "/pages/index/index",
+    };
+  },
 
   /**
    * 重置swiper到第一页
@@ -86,4 +97,5 @@ Page({
       });
     }, 200);
   },
+
 });

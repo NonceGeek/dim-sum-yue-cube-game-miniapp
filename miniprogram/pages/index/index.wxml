@@ -6,7 +6,7 @@
     <view class="header">
       <view class="header-option">
         <text class="title">今日游戏进度</text>
-        <t-progress theme="circle" percentage="30" color="{{ {  from: '#0052D9', to: '#00A870' } }}" size="120rpx"
+        <t-progress theme="circle" percentage="80" size="120rpx"
           status="active" />
       </view>
     </view>
@@ -31,10 +31,12 @@
 
       <t-col span="8">
         <view class="stat-card">
-          <view class="stat-value">
-            <t-icon name="share" size="48rpx" />
-          </view>
-          <view class="stat-title">分享卡片</view>
+          <button class="share-button" open-type="share">
+            <view class="stat-value">
+              <t-icon name="share" size="48rpx" />
+            </view>
+            <view class="stat-title">分享卡片</view>
+          </button>
         </view>
       </t-col>
     </t-row>

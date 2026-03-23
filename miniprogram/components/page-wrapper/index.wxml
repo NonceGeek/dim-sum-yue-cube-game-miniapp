@@ -39,7 +39,7 @@
           <view class="settings-card">
             <view class="setting-item" bind:tap="onThemeSettingTap">
               <view class="setting-left">
-                <view class="setting-icon theme-icon">
+                <view class="setting-icon theme-icon theme-{{currentTheme}}">
                   <t-icon name="{{currentTheme === 'dark' ? 'mode-dark' : 'mode-light'}}" size="48rpx"
                     color="inherit" />
                 </view>

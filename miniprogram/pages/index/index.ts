@@ -5,13 +5,39 @@ Page({
   data: {
     activeCell: "",
     sceneList: [] as Array<{ id: string; icon: string; text: string }>,
+    currentTheme: "light" as "light" | "dark",
+    themeMode: "auto" as "auto" | "light" | "dark",
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad() {
+    this.syncTheme();
     this.initSceneList();
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+    this.syncTheme();
+    // 重置active状态
+    this.setData({ activeCell: "" });
+  },
+
+  /**
+   * 同步主题状态
+   */
+  syncTheme() {
+    const app = getApp<any>();
+    const themeMode = app.getThemeMode();
+    const currentTheme = app.getTheme();
+
+    this.setData({
+      themeMode,
+      currentTheme,
+    });
   },
 
   /**
@@ -39,27 +65,6 @@ Page({
     // 重置active状态
     this.setData({ activeCell: "" });
   },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {},
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {},
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {},
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {},
-
   /**
    * 用户点击右上角分享
    */

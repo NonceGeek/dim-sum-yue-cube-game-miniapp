@@ -1,20 +1,27 @@
-<page-wrapper pageIcon="{{pageIcon}}" pageText="{{pageText}}">
-  <!-- 首页内容插槽 -->
-  <view slot="page-content">
-  <view class="title">选择场景</view>
-    <t-cell-group  class="custom-cell-group">
-      <view class="cell-wrapper {{activeCell === 'food' ? 'active' : ''}}" bind:tap="onSceneCellTap" data-id="food">
-        <t-cell bordered="{{false}}" title="饮食" leftIcon="hamburger" description="共有14句常用语" hover class="custom-cell" />
-      </view>
-      <view class="cell-wrapper {{activeCell === 'direction' ? 'active' : ''}}" bind:tap="onSceneCellTap" data-id="direction">
-        <t-cell bordered="{{false}}" title="问路" leftIcon="map" description="共有14句常用语" hover class="custom-cell" />
-      </view>
-      <view class="cell-wrapper {{activeCell === 'attraction' ? 'active' : ''}}" bind:tap="onSceneCellTap" data-id="attraction">
-        <t-cell bordered="{{false}}" title="景点" leftIcon="tower-2" description="共有14句常用语" hover class="custom-cell" />
-      </view>
-      <view class="cell-wrapper {{activeCell === 'accommodation' ? 'active' : ''}}" bind:tap="onSceneCellTap" data-id="accommodation">
-        <t-cell bordered="{{false}}" title="住宿" leftIcon="houses-1" description="共有14句常用语" hover class="custom-cell" />
-      </view>
-    </t-cell-group>
-  </view>
-</page-wrapper>
+<view class="container-wrap theme-{{currentTheme}}">
+  <page-wrapper pageIcon="{{pageIcon}}" pageText="{{pageText}}">
+    <!-- 首页内容插槽 -->
+    <view slot="page-content">
+      <view class="title">选择场景</view>
+      <t-cell-group class="custom-cell-group">
+        <view class="cell-wrapper {{activeCell === 'food' ? 'active' : ''}}" bind:tap="onSceneCellTap" data-id="food">
+          <t-cell bordered="{{false}}" title="饮食" leftIcon="hamburger" description="共有14句常用语" hover
+            class="custom-cell" />
+        </view>
+        <view class="cell-wrapper {{activeCell === 'direction' ? 'active' : ''}}" bind:tap="onSceneCellTap"
+          data-id="direction">
+          <t-cell bordered="{{false}}" title="问路" leftIcon="map" description="共有14句常用语" hover class="custom-cell" />
+        </view>
+        <view class="cell-wrapper {{activeCell === 'attraction' ? 'active' : ''}}" bind:tap="onSceneCellTap"
+          data-id="attraction">
+          <t-cell bordered="{{false}}" title="景点" leftIcon="tower-2" description="共有14句常用语" hover class="custom-cell" />
+        </view>
+        <view class="cell-wrapper {{activeCell === 'accommodation' ? 'active' : ''}}" bind:tap="onSceneCellTap"
+          data-id="accommodation">
+          <t-cell bordered="{{false}}" title="住宿" leftIcon="houses-1" description="共有14句常用语" hover
+            class="custom-cell" />
+        </view>
+      </t-cell-group>
+    </view>
+  </page-wrapper>
+</view>

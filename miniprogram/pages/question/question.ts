@@ -95,10 +95,12 @@ Page({
     selectedIndex: null as number | null,
     selectedBtn: null as string | null,
     progressPercent: 0,
+    // 结果弹窗相关状态
     showResultDialog: false,
     isCorrect: false,
     resultMessage: "",
     correctCount: 0,
+    // 倒计时
     time: 15 * 1000,
     // 录音相关状态
     recording: false,
@@ -110,15 +112,42 @@ Page({
     touchStartX: 0,
     touchStartY: 0,
     justFinishedRecording: false,
+    // 主题相关
+    currentTheme: "light" as "light" | "dark",
+    themeMode: "auto" as "auto" | "light" | "dark",
+    // 提醒/提示
+    showConfirm: false,
+    title: "",
+    content: "",
+    showCancel: false,
+    cancelBtn: "取消",
+    // image
+    imageUrl: "",
   },
 
   onLoad(options) {
+    this.syncTheme();
     const scene = options.scene || "context";
     const app = getApp<any>();
     const info = app.getSceneType(scene);
     console.log("scene:", scene);
     this.setData({ scene, pageIcon: info.icon, pageText: info.text });
     this.loadQuestions(scene);
+  },
+
+  onShow() {
+    this.syncTheme();
+  },
+
+  syncTheme() {
+    const app = getApp<any>();
+    const themeMode = app.getThemeMode();
+    const currentTheme = app.getTheme();
+
+    this.setData({
+      themeMode,
+      currentTheme,
+    });
   },
 
   loadQuestions(scene: string) {
@@ -144,7 +173,23 @@ Page({
 
   onBtnSelect(e: any) {
     const btn = e.currentTarget.dataset.btn;
-    this.setData({ selectedBtn: btn });
+    this.setData({ selectedBtn: btn }, () => {
+      this.onShowConfirm();
+    });
+  },
+
+  onShowConfirm() {
+    const { selectedBtn } = this.data;
+    if (selectedBtn === "cancel") {
+      this.setData({
+        showConfirm: true,
+        title: "确认返回",
+        content: `是否要返回上一级？`,
+        showCancel: true,
+      });
+    } else {
+      //点击了ai评分
+    }
   },
 
   onSubmit() {
@@ -182,13 +227,11 @@ Page({
 
     if (nextIndex >= totalCount) {
       // 答题结束
-      wx.showModal({
+      this.setData({
+        showConfirm: true,
         title: "答题完成",
         content: `你答对了 ${this.data.correctCount} / ${totalCount} 题`,
         showCancel: false,
-        success: () => {
-          wx.navigateBack();
-        },
       });
       return;
     }
@@ -202,14 +245,23 @@ Page({
     });
   },
   onCountDownFinish() {
-    const { isCorrect } = this.data;
-    if (isCorrect) {
-      this.setData({
+    this.setData(
+      {
         showResultDialog: true,
         isCorrect: false,
         resultMessage: "时间到！",
-      });
-    }
+      },
+      () => {
+        // 3秒后自动关闭弹窗
+        setTimeout(() => {
+          this.setData({ showResultDialog: false, time: 15 * 1000 });
+          // 延迟一点再进入下一题，让用户看到结果
+          setTimeout(() => {
+            this.onResultConfirm();
+          }, 300);
+        }, 2000);
+      },
+    );
   },
 
   // 开始录音
@@ -291,7 +343,12 @@ Page({
     this.setData({ recordTimer: timer });
 
     const recorderManager = wx.getRecorderManager();
-    recorderManager.start({ format: "mp3", sampleRate: 44100, numberOfChannels: 1, encodeBitRate: 128000 });
+    recorderManager.start({
+      format: "mp3",
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      encodeBitRate: 128000,
+    });
 
     recorderManager.onStop((res) => {
       console.log("录音完成", res);
@@ -325,7 +382,9 @@ Page({
 
     wx.hideToast();
     this.setData({ justFinishedRecording: true });
-    setTimeout(() => { this.setData({ justFinishedRecording: false }); }, 300);
+    setTimeout(() => {
+      this.setData({ justFinishedRecording: false });
+    }, 300);
   },
 
   saveAudioUrl(filePath: string) {
@@ -350,5 +409,27 @@ Page({
     backgroundAudioManager.title = "录音播放";
     backgroundAudioManager.src = url;
     wx.showToast({ title: "正在播放...", icon: "loading", duration: 1000 });
+  },
+  onConfirm() {
+    wx.navigateBack();
+  },
+  onCancel() {
+    this.setData({ showConfirm: false });
+  },
+
+  // 选择图片
+  onChooseImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        this.setData({ imageUrl: tempFilePath });
+      },
+      fail: (err) => {
+        console.error('选择图片失败', err);
+      }
+    });
   },
 });

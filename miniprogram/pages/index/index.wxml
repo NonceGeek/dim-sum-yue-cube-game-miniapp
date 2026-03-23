@@ -1,53 +1,54 @@
-<!-- 使用页面包装器组件 -->
-<page-wrapper pageIcon="home" pageText="首页">
-  <!-- 首页内容插槽 -->
-  <view slot="page-content">
-    <!-- Header -->
-    <view class="header">
-      <view class="header-option">
-        <text class="title">今日游戏进度</text>
-        <t-progress theme="circle" percentage="80" size="120rpx"
-          status="active" />
+<view class="container-wrap theme-{{currentTheme}}">
+  <page-wrapper pageIcon="home" pageText="首页">
+    <!-- 首页内容插槽 -->
+    <view slot="page-content">
+      <!-- Header -->
+      <view class="header">
+        <view class="header-option">
+          <text class="title">今日游戏进度</text>
+          <t-progress theme="circle" percentage="80" size="120rpx" status="active" color="#6b93f5" />
+        </view>
       </view>
-    </view>
-    <view class="subtitle">
-      <t-icon name="task" size="48rpx" />
-      <view>每日游戏任务</view>
-    </view>
-    <t-row gutter="16" class="stats">
-      <t-col span="8">
-        <view class="stat-card">
-          <view class="stat-value">5</view>
-          <view class="stat-title">完成题数</view>
-        </view>
-      </t-col>
-
-      <t-col span="8">
-        <view class="stat-card">
-          <view class="stat-value">3</view>
-          <view class="stat-title">连续天数</view>
-        </view>
-      </t-col>
-
-      <t-col span="8">
-        <view class="stat-card">
-          <button class="share-button" open-type="share">
-            <view class="stat-value">
-              <t-icon name="share" size="48rpx" />
-            </view>
-            <view class="stat-title">分享卡片</view>
-          </button>
-        </view>
-      </t-col>
-    </t-row>
-    <view class="subtitle">
-      <t-icon name="gamepad" size="48rpx" />
-      <view>游戏大厅</view>
-    </view>
-    <t-cell-group bordered="{{false}}" class="custom-cell-group">
-      <view wx:for="{{sceneList}}" wx:key="id" class="cell-wrapper {{activeCell === item.id ? 'active' : ''}}" bind:tap="onGameCellTap" data-id="{{item.id}}">
-        <t-cell bordered="{{false}}" title="{{item.text}}" leftIcon="{{item.icon}}" hover class="custom-cell" />
+      <view class="subtitle">
+        <t-icon name="task" size="48rpx" />
+        <view>每日游戏任务</view>
       </view>
-    </t-cell-group>
-  </view>
-</page-wrapper>
+      <t-row gutter="16" class="stats">
+        <t-col span="8">
+          <view class="stat-card">
+            <view class="stat-value">5</view>
+            <view class="stat-title">完成题数</view>
+          </view>
+        </t-col>
+
+        <t-col span="8">
+          <view class="stat-card">
+            <view class="stat-value">3</view>
+            <view class="stat-title">连续天数</view>
+          </view>
+        </t-col>
+
+        <t-col span="8">
+          <view class="stat-card">
+            <button class="share-button" open-type="share">
+              <view class="stat-value">
+                <t-icon name="share" size="48rpx" />
+              </view>
+              <view class="stat-title">分享卡片</view>
+            </button>
+          </view>
+        </t-col>
+      </t-row>
+      <view class="subtitle">
+        <t-icon name="gamepad" size="48rpx" />
+        <view>游戏大厅</view>
+      </view>
+      <t-cell-group bordered="{{false}}" class="custom-cell-group">
+        <view wx:for="{{sceneList}}" wx:key="id" class="cell-wrapper {{activeCell === item.id ? 'active' : ''}}"
+          bind:tap="onGameCellTap" data-id="{{item.id}}">
+          <t-cell bordered="{{false}}" title="{{item.text}}" leftIcon="{{item.icon}}" hover class="custom-cell" />
+        </view>
+      </t-cell-group>
+    </view>
+  </page-wrapper>
+</view>

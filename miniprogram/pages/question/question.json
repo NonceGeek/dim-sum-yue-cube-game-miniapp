@@ -9,7 +9,8 @@
     "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "t-avatar": "tdesign-miniprogram/avatar/avatar",
     "t-image": "tdesign-miniprogram/image/image",
-    "t-count-down": "tdesign-miniprogram/count-down/count-down"
+    "t-count-down": "tdesign-miniprogram/count-down/count-down",
+    "t-upload": "tdesign-miniprogram/upload/upload"
   },
   "navigationBarTitleText": "答题环节",
   "navigationBarBackgroundColor": "@navBgColor",

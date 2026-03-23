@@ -38,6 +38,10 @@
   align-items: center;
 }
 
+.t-count-down {
+  color: var(--text-primary) !important;
+}
+
 /* 场景标题 */
 .scene-title {
   padding: 0 32rpx 24rpx 0;
@@ -117,21 +121,6 @@
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-all;
-}
-
-/* 结果弹窗图标 */
-.result-icon {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 4rpx;
-}
-
-.result-icon.success {
-  color: var(--secondary);
-}
-
-.result-icon.error {
-  color: var(--danger);
 }
 
 /* 提交按钮区域 */
@@ -261,6 +250,29 @@
   padding: 24rpx 32rpx;
 }
 
+/* 上传占位图 */
+.upload-placeholder {
+  width: 100%;
+  height: 33.33vh;
+  background-color: var(--bg-input);
+  border: 2rpx dashed var(--border-color);
+  border-radius: 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.upload-placeholder:active {
+  background-color: var(--border-light);
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: var(--text-muted);
+}
+
 /* 图片宽度100% */
 .img-full {
   width: 100% !important;
@@ -281,18 +293,25 @@
   padding: 0 0 24rpx;
 }
 
+.info-dialog {
+  border-radius: 16rpx;
+  padding: 32rpx;
+  text-align: center;
+  background: var(--bg-card) !important;
+}
+
 /* 公共弹窗样式 */
 .result-dialog {
   border-radius: 16rpx;
   padding: 32rpx;
   text-align: center;
-  background: var(--bg-card);
+  background: var(--bg-card) !important;
 }
 
 /* 正确状态 - 渐变边框 */
 .result-dialog.correct {
   position: relative;
-  background: var(--gradient-subtitle);
+  background: var(--gradient-subtitle) !important;
 }
 
 .result-dialog.correct::before {
@@ -323,6 +342,20 @@
 }
 
 /* 错误状态 */
+.result-dialog.wrong .t-dialog__header {
+  color: var(--text-primary) !important;
+}
 .result-dialog.wrong {
+  color: var(--text-muted) !important;
+}
+.info-dialog .t-dialog__header,
+.info-dialog .t-dialog__body-text {
+  color: var(--text-primary) !important;
+}
+
+.info-dialog .t-button__content {
+  color: var(--text-inverse) !important;
+}
+.info-dialog .t-dialog__button--cancel .t-button__content {
   color: var(--text-muted) !important;
 }

@@ -42,7 +42,8 @@
   padding: 16rpx 32rpx;
   margin-top: 0;
   margin-bottom: 24rpx;
-  background: var(--gradient-subtitle);
+  background: var(--gradient-subtitle) !important;
+  color: #fff;
 }
 
 .stats-row {
@@ -101,4 +102,12 @@
   margin-top: 8rpx;
   font-size: 24rpx;
   color: #888;
+}
+
+.t-progress__canvas--inner {
+  background: var(--bg-card) !important;
+}
+
+.t-progress__info {
+  color: var(--text-primary) !important;
 }

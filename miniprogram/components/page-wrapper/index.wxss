@@ -121,6 +121,11 @@ t-action-sheet .t-popup {
   color: #b45309;
 }
 
+.theme-dark .theme-icon {
+  background: linear-gradient(135deg, #1E3A5F 0%, #2D4A6F 100%);
+  color: #60A5FA;
+}
+
 .setting-label {
   font-size: 30rpx;
   color: var(--text-primary);

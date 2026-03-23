@@ -44,9 +44,9 @@ page {
   --gradient-button: linear-gradient(135deg, #4a7cf3 0%, #6b93f5 100%);
   --gradient-subtitle: linear-gradient(
     to right,
-    rgba(74, 124, 243, 0.45) 0%,
-    rgba(124, 92, 255, 0.45) 50%,
-    transparent 100%
+    #5d8cf5 0%,
+    #9178ff 50%,
+    var(--bg-card) 100%
   );
   --gradient-primary-start: #4a7cf3;
   --gradient-primary-end: #7c5cff;
@@ -100,6 +100,7 @@ page {
   --td-tab-bar-active-color: var(--primary);
   --td-tab-bar-item-color: var(--text-muted);
   --td-tab-bar-item-active-color: var(--primary);
+
   --td-font-family:
     -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto,
     sans-serif;
@@ -109,6 +110,12 @@ page {
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
+}
+
+/* t-design progress 组件变量覆盖 - 必须在 page 之后以覆盖组件内部样式 */
+.t-progress {
+  --td-progress-inner-bg-color: var(--primary) !important;
+  --td-progress-track-bg-color: var(--border-color) !important;
 }
 
 /* ============================================
@@ -144,7 +151,7 @@ page {
       to right,
       #5d8cf5 0%,
       #9178ff 50%,
-      transparent 100%
+      var(--bg-card) 100%
     );
 
     /* 背景色 */
@@ -388,9 +395,9 @@ page {
   ) !important;
   --gradient-subtitle: linear-gradient(
     to right,
-    rgba(74, 124, 243, 0.1) 0%,
-    rgba(124, 92, 255, 0.05) 50%,
-    transparent 100%
+    #5d8cf5 0%,
+    #9178ff 50%,
+    var(--bg-card) 100%
   ) !important;
 
   /* 背景色 */
@@ -446,9 +453,9 @@ page {
   ) !important;
   --gradient-subtitle: linear-gradient(
     to right,
-    rgba(93, 140, 245, 0.2) 0%,
-    rgba(145, 120, 255, 0.1) 50%,
-    transparent 100%
+    #5d8cf5 0%,
+    #9178ff 50%,
+    var(--bg-card) 100%
   ) !important;
 
   /* 背景色 */

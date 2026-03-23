@@ -7,14 +7,40 @@ Page({
     pageIcon: "home",
     pageText: "",
     activeCell: "",
+    currentTheme: "light" as "light" | "dark",
+    themeMode: "auto" as "auto" | "light" | "dark",
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
+    this.syncTheme();
     const scene = options.scene || "context";
     this.setSceneInfo(scene);
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+    this.syncTheme();
+    // 重置active状态
+    this.setData({ activeCell: "" });
+  },
+
+  /**
+   * 同步主题状态
+   */
+  syncTheme() {
+    const app = getApp<any>();
+    const themeMode = app.getThemeMode();
+    const currentTheme = app.getTheme();
+
+    this.setData({
+      themeMode,
+      currentTheme,
+    });
   },
 
   /**

@@ -6,7 +6,7 @@
   </view>
 
   <!-- 底部导航 -->
-  <t-tab-bar value="{{selectedValue}}" bind:change="onTabBarChange" fixed bordered="{{false}}">
+  <t-tab-bar value="{{selectedValue}}" bind:change="onTabBarChange" fixed bordered="{{false}}" split="{{false}}">
     <t-tab-bar-item value="current" icon="{{currentPageIcon}}" text="{{currentPageText}}">{{currentPageText}}</t-tab-bar-item>
     <t-tab-bar-item value="profile" icon="user" text="个人中心">个人中心</t-tab-bar-item>
   </t-tab-bar>

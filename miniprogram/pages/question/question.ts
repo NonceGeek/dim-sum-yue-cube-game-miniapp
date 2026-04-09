@@ -102,6 +102,8 @@ Page({
     correctCount: 0,
     // 倒计时
     time: 15 * 1000,
+    countDownRunning: true,
+    countDownUrgent: false,
     // 录音相关状态
     recording: false,
     recordTime: 0,
@@ -160,6 +162,8 @@ Page({
       totalCount,
       currentQuestion: questions[0],
       progressPercent: Math.round((1 / totalCount) * 100),
+      countDownRunning: true,
+      countDownUrgent: false,
     });
   },
 
@@ -226,12 +230,13 @@ Page({
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= totalCount) {
-      // 答题结束
+      // 答题结束，停止倒计时
       this.setData({
         showConfirm: true,
         title: "答题完成",
         content: `你答对了 ${this.data.correctCount} / ${totalCount} 题`,
         showCancel: false,
+        time: 0,
       });
       return;
     }
@@ -242,19 +247,39 @@ Page({
       currentQuestion: questions[nextIndex],
       selectedIndex: null,
       progressPercent: Math.round(((nextIndex + 1) / totalCount) * 100),
+      countDownRunning: true,
+      countDownUrgent: false,
     });
   },
+  onCountDownChange(e: any) {
+    const remainingMs = e.detail.ss;
+    // 最后3秒变紧急状态
+    if (remainingMs <= 3 && remainingMs > 0) {
+      this.setData({ countDownUrgent: true });
+    } else {
+      this.setData({ countDownUrgent: false });
+    }
+  },
+
   onCountDownFinish() {
     this.setData(
       {
         showResultDialog: true,
         isCorrect: false,
         resultMessage: "时间到！",
+        countDownRunning: false,
+        countDownUrgent: false,
       },
       () => {
         // 3秒后自动关闭弹窗
         setTimeout(() => {
-          this.setData({ showResultDialog: false, time: 15 * 1000 });
+          this.setData({
+            showResultDialog: false,
+            time:
+              this.data.totalCount !== this.data.currentIndex + 1
+                ? 15 * 1000
+                : 0,
+          });
           // 延迟一点再进入下一题，让用户看到结果
           setTimeout(() => {
             this.onResultConfirm();
@@ -421,15 +446,15 @@ Page({
   onChooseImage() {
     wx.chooseMedia({
       count: 1,
-      mediaType: ['image'],
-      sourceType: ['album', 'camera'],
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
         this.setData({ imageUrl: tempFilePath });
       },
       fail: (err) => {
-        console.error('选择图片失败', err);
-      }
+        console.error("选择图片失败", err);
+      },
     });
   },
 });

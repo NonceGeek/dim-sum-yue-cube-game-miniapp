@@ -36,6 +36,48 @@
 .count-down {
   display: inline-flex;
   align-items: center;
+  gap: 12rpx;
+  transition: all 0.3s ease;
+}
+
+.count-down-number.urgent {
+  transform: scale(1.4);
+  transition: transform 0.2s ease;
+}
+
+.count-down-number.urgent .t-count-down,
+.count-down-suffix.urgent {
+  color: var(--danger) !important;
+  font-weight: 700 !important;
+}
+
+.hourglass {
+  display: flex;
+  align-items: center;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.hourglass.flipping {
+  animation: flip-sand 3s ease-in-out infinite;
+}
+
+@keyframes flip-sand {
+  0% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(180deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  90% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .t-count-down {
@@ -311,7 +353,7 @@
 /* 正确状态 - 渐变边框 */
 .result-dialog.correct {
   position: relative;
-  background: var(--gradient-subtitle) !important;
+  background: var(--gradient-button) !important;
 }
 
 .result-dialog.correct::before {
@@ -348,13 +390,27 @@
 .result-dialog.wrong {
   color: var(--text-muted) !important;
 }
+
 .info-dialog .t-dialog__header,
 .info-dialog .t-dialog__body-text {
   color: var(--text-primary) !important;
 }
 
+.info-dialog button {
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.info-dialog button::after {
+  border: none !important;
+}
+
 .info-dialog .t-button__content {
-  color: var(--text-inverse) !important;
+  color: #fff !important;
+}
+.info-dialog .t-dialog__button--cancel {
+  background: var(--bg-input) !important;
 }
 .info-dialog .t-dialog__button--cancel .t-button__content {
   color: var(--text-muted) !important;

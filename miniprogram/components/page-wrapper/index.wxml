@@ -15,7 +15,10 @@
               <t-avatar class="avatar" shape="circle" size="large" icon="user" />
               <view class="user-details">
                 <view class="username">用户</view>
-                <view class="user-title">粤语达人</view>
+                <view class="user-title {{titleAnimate ? 'user-title--animate' : ''}}">
+                  <view class="user-title__shine"></view>
+                  粤语达人
+                </view>
               </view>
             </view>
 

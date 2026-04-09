@@ -34,6 +34,7 @@ Component({
 
   data: {
     currentSwiperIndex: 0,
+    titleAnimate: false,
     // 主题相关
     currentTheme: 'light' as 'light' | 'dark',
     themeMode: 'auto' as 'auto' | 'light' | 'dark',
@@ -53,16 +54,29 @@ Component({
     onSwiperChange(e) {
       const index = e.detail.current;
       this.setData({
-        currentSwiperIndex: index
+        currentSwiperIndex: index,
+        titleAnimate: false,
       });
+      // 切到个人中心页时触发光波动画
+      if (index === 1) {
+        setTimeout(() => {
+          this.setData({ titleAnimate: true });
+        }, 50);
+      }
     },
 
     // tab-bar触发swiper切换
     onTabBarSwiperChange(e) {
       const index = e.detail.index;
       this.setData({
-        currentSwiperIndex: index
+        currentSwiperIndex: index,
+        titleAnimate: false,
       });
+      if (index === 1) {
+        setTimeout(() => {
+          this.setData({ titleAnimate: true });
+        }, 50);
+      }
     },
 
     // 同步主题状态

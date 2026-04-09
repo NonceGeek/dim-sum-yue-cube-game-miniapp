@@ -54,9 +54,88 @@ t-action-sheet .t-popup {
 }
 
 .user-title {
+  position: relative;
+  display: inline-block;
   font-size: 28rpx;
   color: #fff;
   font-weight: 500;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  overflow: hidden;
+  z-index: 0;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.user-title--animate {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 16rpx rgba(255, 255, 255, 0.5), inset 0 0 8rpx rgba(255, 255, 255, 0.2);
+}
+
+/* 边框跑马灯 - 使用conic-gradient旋转 */
+.user-title__border {
+  position: absolute;
+  inset: -4rpx;
+  border-radius: 10rpx;
+  padding: 2rpx;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.3) 70%,
+    #fff 85%,
+    rgba(255, 255, 255, 0.9) 95%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+}
+
+/* 荣誉称号扫描光 - 从左到右 */
+.user-title__shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 80%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+}
+
+.user-title--animate .user-title__border {
+  opacity: 1;
+  animation: border-rotate 1.5s linear forwards;
+}
+
+.user-title--animate .user-title__shine {
+  animation: shine-sweep 0.8s ease-out forwards;
+}
+
+@keyframes border-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shine-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 150%;
+  }
 }
 
 /* Settings Section */

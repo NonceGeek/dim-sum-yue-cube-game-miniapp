@@ -6,7 +6,7 @@
       <view class="header">
         <view class="header-option">
           <text class="title">今日游戏进度</text>
-          <t-progress theme="circle" percentage="80" size="120rpx" status="active" color="#6b93f5" />
+          <t-progress theme="circle" percentage="80" size="120rpx" status="active" color="#7c5cff" />
         </view>
       </view>
       <view class="subtitle">

@@ -17,7 +17,13 @@
           <view class="question-content">
             <view class="count-down-container">
               <view class="count-down">
-                <t-count-down time="{{ time }}" format="ss" bind:finish="onCountDownFinish" />s
+                <view class="hourglass {{countDownRunning ? 'flipping' : ''}}">
+                  <t-icon name="hourglass" size="40rpx" />
+                </view>
+                <view class="count-down-number {{countDownUrgent ? 'urgent' : ''}}">
+                  <t-count-down time="{{ time }}" format="ss" bind:change="onCountDownChange" bind:finish="onCountDownFinish" />
+                </view>
+                <text class="count-down-suffix">s</text>
               </view>
             </view>
             <!-- 对话卡片 -->

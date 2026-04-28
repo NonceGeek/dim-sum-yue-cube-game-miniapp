@@ -44,7 +44,9 @@
         <view>游戏大厅</view>
       </view>
       <t-cell-group bordered="{{false}}" class="custom-cell-group">
-        <view wx:for="{{sceneList}}" wx:key="id" class="cell-wrapper {{activeCell === item.id ? 'active' : ''}}"
+        <view wx:for="{{sceneList}}" wx:key="id"
+          class="cell-wrapper {{showAnimation ? 'cell-anim' : ''}} {{activeCell === item.id ? 'active' : ''}}"
+          style="animation-delay: {{index * 0.15}}s"
           bind:tap="onGameCellTap" data-id="{{item.id}}">
           <t-cell bordered="{{false}}" title="{{item.text}}" leftIcon="{{item.icon}}" hover class="custom-cell" />
         </view>

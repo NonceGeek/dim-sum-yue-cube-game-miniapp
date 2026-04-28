@@ -4,6 +4,8 @@ Page({
    */
   data: {
     activeCell: "",
+    showAnimation: false,
+    hasAnimated: false,
     sceneList: [] as Array<{ id: string; icon: string; text: string }>,
     currentTheme: "light" as "light" | "dark",
     themeMode: "auto" as "auto" | "light" | "dark",
@@ -56,7 +58,16 @@ Page({
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
-  onReady() {},
+  onReady() {
+    if (!this.data.hasAnimated) {
+      setTimeout(() => {
+        this.setData({
+          showAnimation: true,
+          hasAnimated: true,
+        });
+      }, 100);
+    }
+  },
 
   /**
    * 生命周期函数--监听页面显示

@@ -1,10 +1,11 @@
 // app.ts
-
+import ENV from "./config/setting";
 import { IAppOption, SceneTypeInfo } from "../typings";
 
 // 主题类型定义
 export type ThemeMode = "auto" | "light" | "dark";
 export type ThemeValue = "light" | "dark";
+let loginPromise: Promise<string> | null = null;
 
 App<IAppOption>({
   globalData: {
@@ -20,7 +21,8 @@ App<IAppOption>({
     const logs = wx.getStorageSync("logs") || [];
     logs.unshift(Date.now());
     wx.setStorageSync("logs", logs);
-
+    // 从 storage 恢复全局数据（解决热启动问题）
+    this.restoreGlobalData();
     // 初始化主题
     this.initTheme();
 
@@ -33,6 +35,31 @@ App<IAppOption>({
     });
   },
 
+  /**
+   * 从 storage 恢复全局数据
+   * 解决小程序热启动时 globalData 丢失的问题
+   */
+  restoreGlobalData() {
+    try {
+      const accessToken = wx.getStorageSync("accessToken");
+      const refreshToken = wx.getStorageSync("refreshToken");
+      const userInfo = wx.getStorageSync("userInfo");
+
+      // 恢复数据到 globalData
+      if (accessToken) this.globalData.accessToken = accessToken;
+      if (refreshToken) this.globalData.refreshToken = refreshToken;
+      if (userInfo) this.globalData.userInfo = userInfo;
+
+      if (accessToken || userInfo) {
+        console.log("✅ 从 storage 恢复全局数据:", {
+          hasToken: !!accessToken,
+          hasUser: !!userInfo,
+        });
+      }
+    } catch (error) {
+      console.error("恢复全局数据失败:", error);
+    }
+  },
   /**
    * 初始化主题设置
    */
@@ -178,5 +205,179 @@ App<IAppOption>({
   getSceneType(scene: string): SceneTypeInfo {
     const sceneMap = this.getSceneMap();
     return sceneMap[scene] || sceneMap["context"];
+  },
+  /**
+   * 确保登录，返回 accessToken，可设置重试次数
+   * 自动支持审核模式 mock token
+   */
+  ensureLogin(_retries = 1): Promise<string> {
+    if (!loginPromise) {
+      loginPromise = (async () => {
+        // 审核模式直接返回 mock token
+        if (ENV.IS_REVIEW) {
+          console.log("审核模式，使用 mock token");
+          const mockToken = "review-token";
+          const mockUser: { nickname: string; avatar: string } = {
+            nickname: "审核用户",
+            avatar: "",
+          };
+          this.globalData.accessToken = mockToken;
+          this.globalData.userInfo = mockUser as any;
+          await Promise.all([
+            this.setStorage("accessToken", mockToken),
+            this.setStorage("userInfo", mockUser),
+          ]);
+          return mockToken;
+        }
+
+        // 尝试从 storage 获取 token
+        const token = await this.getStorage("accessToken");
+        if (token) {
+          this.globalData.accessToken = token;
+          console.log("已存在 token，直接使用");
+          return token;
+        }
+
+        console.log("No token in storage, manual login required.");
+        throw new Error("需要手动登录");
+      })().finally(() => {
+        loginPromise = null; // 登录完成后清掉
+      });
+    }
+    return loginPromise;
+  },
+
+  // 尝试登录，失败时自动重试
+  async tryLogin(retries: number): Promise<string> {
+    try {
+      return await this.doLogin();
+    } catch (err: any) {
+      console.warn(
+        `登录失败: ${err.message || err.errMsg || err}`,
+        `剩余重试次数: ${retries}`,
+      );
+      if (retries > 0) {
+        await new Promise((res) => setTimeout(res, 500)); // 延迟 500ms 再重试
+        return this.tryLogin(retries - 1);
+      }
+      throw new Error(err.message || "登录失败");
+    }
+  },
+
+  // 执行微信登录
+  doLogin(): Promise<string> {
+    wx.showLoading({ title: "登录中..." });
+    return new Promise((resolve, reject) => {
+      wx.login({
+        success: (res) => {
+          if (!res.code) {
+            wx.hideLoading();
+            return reject(new Error("登录失败：未获取 code"));
+          }
+
+          wx.request({
+            url: `${ENV.API_BASE_URL}/auth/login`,
+            method: "POST",
+            data: { code: res.code, miniprogramApp: "yue-cube-game" },
+            timeout: 15000, // 审核环境可能较慢
+            success: async (resp) => {
+              wx.hideLoading();
+
+              console.log("返回结果：", resp);
+              if (resp.statusCode !== 200) {
+                return reject(resp.data);
+              } else {
+                console.log("登录接口返回", resp.data); // 审核模式排查用
+                await this.handleLoginSuccess(resp.data);
+                resolve(this.globalData.accessToken);
+              }
+            },
+            fail: (err) => {
+              wx.hideLoading();
+              reject(err);
+            },
+          });
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          reject(err);
+        },
+      });
+    });
+  },
+
+  // 执行手机号登录
+  doPhoneLogin(phone: string, smsCode: string): Promise<string> {
+    wx.showLoading({ title: "登录中..." });
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: `${ENV.API_BASE_URL}/auth/login`,
+        method: "POST",
+        data: { phoneNumber: phone, verificationCode: smsCode },
+        timeout: 15000,
+        success: async (resp) => {
+          wx.hideLoading();
+
+          console.log("手机号登录返回结果：", resp);
+          if (resp.statusCode !== 200) {
+            return reject(resp.data);
+          } else {
+            console.log("登录接口返回", resp.data);
+            await this.handleLoginSuccess(resp.data);
+            resolve(this.globalData.accessToken);
+          }
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          reject(err);
+        },
+      });
+    });
+  },
+
+  // 处理登录成功后的公共逻辑
+  async handleLoginSuccess(data: any) {
+    const { accessToken, refreshToken, user } = data || {};
+    if (!accessToken) throw new Error("登录失败：未返回 token");
+
+    // 更新全局状态
+    this.globalData.accessToken = accessToken;
+    this.globalData.refreshToken = refreshToken;
+    this.globalData.userInfo = user;
+
+    // 异步存储
+    await Promise.all([
+      this.setStorage("accessToken", accessToken),
+      this.setStorage("refreshToken", refreshToken),
+      this.setStorage("userInfo", user),
+    ]);
+
+    console.log("登录成功", user);
+  },
+
+  doSendSms(phone: string): Promise<any> {
+    wx.showLoading({ title: "发送验证码中..." });
+    return new Promise((resolve, reject) => {
+      wx.request({
+        url: `${ENV.API_BASE_URL}/auth/send-sms`,
+        method: "POST",
+        data: { phoneNumber: phone },
+        timeout: 15000, // 审核环境可能较慢
+        success: async (resp) => {
+          wx.hideLoading();
+
+          console.log("返回结果：", resp);
+          if (resp.statusCode !== 200) {
+            return reject(resp.data);
+          } else {
+            resolve(resp.data);
+          }
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          reject(err);
+        },
+      });
+    });
   },
 });

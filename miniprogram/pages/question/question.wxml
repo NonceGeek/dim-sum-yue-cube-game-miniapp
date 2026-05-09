@@ -21,7 +21,8 @@
                   <t-icon name="hourglass" size="40rpx" />
                 </view>
                 <view class="count-down-number {{countDownUrgent ? 'urgent' : ''}}">
-                  <t-count-down time="{{ time }}" format="ss" bind:change="onCountDownChange" bind:finish="onCountDownFinish" />
+                  <t-count-down time="{{ time }}" format="ss" bind:change="onCountDownChange"
+                    bind:finish="onCountDownFinish" />
                 </view>
                 <text class="count-down-suffix">s</text>
               </view>
@@ -30,18 +31,18 @@
             <view class="dialogue-card">
               <view class="dialogue-container">
                 <!-- 场景标题 -->
-                <view class="scene-title">场景：{{currentQuestion.scene}}</view>
-                <block wx:for="{{currentQuestion.dialogueLines}}" wx:key="index">
-                  <view class="dialogue-item {{item.role === 'user' ? 'right' : 'left'}}">
-                    <view class="dialogue-icon">
-                      <t-avatar class="avatar" t-class="square-avatar" shape="round" size="small">{{item.icon}}
-                      </t-avatar>
-                    </view>
-                    <view class="dialogue-bubble">
-                      <view class="dialogue-text">{{item.text}}</view>
-                    </view>
+                <view class="scene-title">场景：{{currentQuestion.scenario}}</view>
+                <!-- <block wx:for="{{currentQuestion.dialogueLines}}" wx:key="index"> -->
+                <view class="dialogue-item left">
+                  <view class="dialogue-icon">
+                    <t-avatar class="avatar" t-class="square-avatar" shape="round" size="small">Q
+                    </t-avatar>
                   </view>
-                </block>
+                  <view class="dialogue-bubble">
+                    <view class="dialogue-text">{{currentQuestion.stemPre}}____{{currentQuestion.stemPost}}</view>
+                  </view>
+                </view>
+                <!-- </block> -->
               </view>
             </view>
 
@@ -69,16 +70,19 @@
 
             <view class="dialogue-card">
               <view class="dialogue-container">
-                <view class="scene-title">{{currentQuestion.text}}</view>
+                <view class="scene-title">{{currentQuestion.question}}</view>
+                <view class="dialogue-item">{{currentQuestion.meaning}}</view>
                 <view class="dialogue-item">{{currentQuestion.jyutping}}</view>
                 <!-- 点击之后换成sound -->
-                <t-icon name="sound-low" size="48rpx" color="inherit" class="sound-right" />
+                <t-icon name="{{ossAudioPlaying ? 'sound' : 'sound-low'}}" size="48rpx" color="inherit"
+                  class="sound-right" bind:tap="onPlayOSSAudio" data-url="{{currentQuestion.audio}}" />
               </view>
             </view>
             <view class="audio-controls">
               <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
                 bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
-                <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon" />
+                <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon"
+                  color="{{recording ? '#fff' : ''}}" />
                 <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
               </view>
             </view>
@@ -87,7 +91,7 @@
               <t-button size="large" shape="round"
                 class="cancel-btn cell-wrapper {{selectedBtn === 'cancel' ? 'active' : ''}}" bind:tap="onBtnSelect"
                 data-btn="cancel">取消</t-button>
-              <t-button size="large" shape="round"
+              <t-button size="large" shape="round" disabled="{{!canSubmitAI}}"
                 class="ai-button cell-wrapper {{selectedBtn === 'ai' ? 'active' : ''}}" bind:tap="onBtnSelect"
                 data-btn="ai">AI评分</t-button>
             </view>
@@ -112,7 +116,8 @@
         <view class="audio-controls">
           <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
             bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
-            <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon" />
+            <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon"
+              color="{{recording ? '#fff' : ''}}" />
             <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
           </view>
         </view>
@@ -122,7 +127,7 @@
           <t-button size="large" shape="round"
             class="cancel-btn cell-wrapper {{selectedBtn === 'cancel' ? 'active' : ''}}" bind:tap="onBtnSelect"
             data-btn="cancel">取消</t-button>
-          <t-button size="large" shape="round" class="ai-button cell-wrapper {{selectedBtn === 'ai' ? 'active' : ''}}"
+          <t-button size="large" shape="round" disabled="{{!canSubmitAI}}" class="ai-button cell-wrapper {{selectedBtn === 'ai' ? 'active' : ''}}"
             bind:tap="onBtnSelect" data-btn="ai">AI评分</t-button>
         </view>
 

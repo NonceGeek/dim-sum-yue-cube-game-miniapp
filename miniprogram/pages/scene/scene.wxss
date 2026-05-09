@@ -6,6 +6,11 @@
   font-weight: 600;
 }
 
+/* 场景列表容器，留出底部 tabbar 的空间 */
+.custom-cell-group {
+  padding-bottom: 200rpx;
+}
+
 /* 依次进入动画 */
 .cell-wrapper {
   opacity: 0;

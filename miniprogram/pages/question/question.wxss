@@ -118,6 +118,7 @@
   display: flex;
   align-items: center;
   gap: 24rpx;
+  font-size: 28rpx;
 }
 
 .dialogue-item.left {
@@ -266,14 +267,19 @@
   gap: 24rpx;
 }
 
-/* 取消按钮 - 深色模式朦胧效果，与 record-btn 一致 */
+/* 取消按钮 - 与 task.wxss 一致 */
 .cancel-btn {
-  background: var(--bg-input) !important;
+  flex: 1;
+  max-width: 200rpx;
+  background-color: var(--bg-input) !important;
   border: 1px solid var(--border-color) !important;
   color: var(--text-secondary) !important;
-  position: relative;
-  border-radius: 999px !important;
+  border-radius: var(--radius-full) !important;
   margin-bottom: 0 !important;
+}
+
+.cancel-btn .t-button__text {
+  font-size: 32rpx !important;
 }
 
 .cancel-btn:active {
@@ -286,6 +292,27 @@
   opacity: 1;
   animation: gradient-move 1.5s linear infinite;
   border-radius: 999px !important;
+}
+
+/* AI��分按钮 - 与 task.wxss 的正确按钮一致 */
+.ai-button {
+  flex: 1;
+  max-width: 200rpx;
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: var(--radius-full) !important;
+  box-shadow: var(--shadow-primary) !important;
+  margin-bottom: 0 !important;
+}
+
+.ai-button .t-button__text {
+  font-size: 32rpx !important;
+}
+
+.ai-button.t-button--disabled {
+  opacity: 0.5 !important;
+  box-shadow: none !important;
 }
 
 .image-container {

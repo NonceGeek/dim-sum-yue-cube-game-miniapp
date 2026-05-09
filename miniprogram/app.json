@@ -1,8 +1,8 @@
 {
   "pages": [
+    "pages/index/index",
     "pages/login/login",
     "pages/webview/webview",
-    "pages/index/index",
     "pages/scene/scene",
     "pages/question/question"
   ],

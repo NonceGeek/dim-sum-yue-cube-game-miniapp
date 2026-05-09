@@ -1,4 +1,5 @@
-// import ENV from "../../config/setting";
+import { IAppOption } from "../../../typings";
+import ENV from "../../config/setting";
 const { miniProgram } = wx.getAccountInfoSync();
 
 Page({
@@ -13,7 +14,7 @@ Page({
     sendingCode: false,
     logining: false,
     agreedToTerms: false,
-    // version: miniProgram.version || `${ENV.VERSION}`,
+    version: miniProgram.version || `${ENV.VERSION}`,
   },
 
   onLoad() {
@@ -48,7 +49,7 @@ Page({
     try {
       // Reuse the existing doLogin method which handles wx.login + backend request
       const app = getApp<IAppOption>();
-      // await app.doLogin();
+      await app.doLogin();
 
       wx.showToast({
         title: "登录成功",
@@ -183,7 +184,7 @@ Page({
     this.setData({ logining: true });
 
     try {
-      // await app.doPhoneLogin(phone, code);
+      await app.doPhoneLogin(phone, code);
 
       wx.showToast({
         title: "登录成功",

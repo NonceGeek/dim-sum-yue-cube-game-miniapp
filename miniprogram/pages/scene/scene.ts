@@ -1,3 +1,33 @@
+import request from "../../utils/http";
+
+const sceneIconMap = {
+  daily: "task",
+  food: "hamburger",
+  travel: "map",
+  shopping: "cart",
+  campus: "education",
+  leisure: "music-1",
+  medical: "hospital-1",
+  greeting: "chat-bubble-smile",
+  housing: "houses",
+  commute: "traffic",
+  sport: "logo-dribbble",
+  work: "desktop",
+  job: "desktop",
+  stroll: "cart",
+  bank: "saving-pot",
+  weather: "sunny",
+  thanks: "chat-heart",
+  post: "send",
+  direction: "map",
+  hobby: "heart",
+  beauty: "cut",
+  communication: "chat",
+  gathering: "palette-1",
+  help: "help-circle",
+  accommodation: "houses-1",
+};
+
 Page({
   /**
    * 页面的初始数据
@@ -42,35 +72,33 @@ Page({
   /**
    * 初始化场景列表
    */
-  initSceneList() {
-    const sceneType = this.data.sceneType;
-    const sceneList = [
-      {
-        id: "food",
-        title: "饮食",
-        icon: "hamburger",
-        description: sceneType === "image" ? "" : "共有14句常用语",
-      },
-      {
-        id: "direction",
-        title: "问路",
-        icon: "map",
-        description: sceneType === "image" ? "" : "共有14句常用语",
-      },
-      {
-        id: "attraction",
-        title: "景点",
-        icon: "tower-2",
-        description: sceneType === "image" ? "" : "共有14句常用语",
-      },
-      {
-        id: "accommodation",
-        title: "住宿",
-        icon: "houses-1",
-        description: sceneType === "image" ? "" : "共有14句常用语",
-      },
-    ];
-    this.setData({ sceneList });
+  async initSceneList() {
+    wx.showLoading({
+      title: "加载中...",
+      mask: true,
+    });
+    try {
+      const sceneType = this.data.sceneType;
+      const res = await request(`/question_scenes?mode=${sceneType}`);
+      console.log("res", res, sceneType);
+      const sceneList = res.map((scene) => {
+        return {
+          ...scene,
+          icon: sceneIconMap[scene.id as keyof typeof sceneIconMap],
+          ...(scene.total ? { description: `共有${scene.total}句常用语` } : {}),
+        };
+      });
+      wx.hideLoading();
+      this.setData({ sceneList });
+    } catch (e) {
+      console.log("获取scene列表失败", e);
+      wx.hideLoading();
+      wx.showToast({
+        title: e.error || "获取scene列表失败",
+        icon: "none",
+        duration: 2000,
+      });
+    }
   },
 
   /**
@@ -108,18 +136,10 @@ Page({
         pageIcon: info.icon,
         pageText: info.text,
       },
-      () => {
-        this.initSceneList();
+      async () => {
+        await this.initSceneList();
       },
     );
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-    // 重置active状态
-    this.setData({ activeCell: "" });
   },
 
   /**
@@ -127,12 +147,13 @@ Page({
    */
   onSceneCellTap(e: any) {
     const sceneId = e.currentTarget.dataset.id;
+    const category = e.currentTarget.dataset.category;
     this.setData({
       activeCell: sceneId,
     });
     setTimeout(() => {
       wx.navigateTo({
-        url: `/pages/question/question?scene=${this.data.sceneType}&category=${sceneId}`,
+        url: `/pages/question/question?scene=${this.data.sceneType}&sceneId=${sceneId}&category=${category}`,
       });
     }, 200);
   },

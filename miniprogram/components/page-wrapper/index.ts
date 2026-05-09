@@ -1,52 +1,70 @@
 // components/page-wrapper/index.js
+import request from "../../utils/http";
+import ENV from "../../config/setting";
+const { miniProgram } = wx.getAccountInfoSync();
 
 // 主题选项
 const THEME_OPTIONS = [
-  { label: '跟随系统', value: 'auto' },
-  { label: '浅色模式', value: 'light' },
-  { label: '深色模式', value: 'dark' },
+  { label: "跟随系统", value: "auto" },
+  { label: "浅色模式", value: "light" },
+  { label: "深色模式", value: "dark" },
 ];
 
 // 主题模式文本映射
 const THEME_MODE_TEXT: Record<string, string> = {
-  auto: '跟随系统',
-  light: '浅色模式',
-  dark: '深色模式',
+  auto: "跟随系统",
+  light: "浅色模式",
+  dark: "深色模式",
+};
+
+const levelOptions = {
+  none: "粤语新人",
+  A: "粤语青铜",
+  B: "粤语铂金",
+  C: "粤语钻石",
+  D: "粤语王者",
 };
 
 Component({
   options: {
-    multipleSlots: true // 启用多个插槽
+    multipleSlots: true, // 启用多个插槽
   },
 
   properties: {
     // 页面图标
     pageIcon: {
       type: String,
-      value: 'home'
+      value: "home",
     },
     // 页面文字
     pageText: {
       type: String,
-      value: '首页'
-    }
+      value: "首页",
+    },
   },
 
   data: {
     currentSwiperIndex: 0,
     titleAnimate: false,
     // 主题相关
-    currentTheme: 'light' as 'light' | 'dark',
-    themeMode: 'auto' as 'auto' | 'light' | 'dark',
-    themeModeText: '跟随系统',
+    currentTheme: "light" as "light" | "dark",
+    themeMode: "auto" as "auto" | "light" | "dark",
+    themeModeText: "跟随系统",
     showThemeSheet: false,
     themeOptions: THEME_OPTIONS,
+    username: "",
+    avatarUrl: "",
+    totalTime: "",
+    completedQuestions: 0,
+    accuracy: "",
+    level: "正在加载",
+    version: miniProgram.version || `${ENV.VERSION}`,
   },
 
   lifetimes: {
     attached() {
       this.syncTheme();
-    }
+    },
   },
 
   methods: {
@@ -59,8 +77,15 @@ Component({
       });
       // 切到个人中心页时触发光波动画
       if (index === 1) {
+        const { name, avatar } = wx.getStorageSync("userInfo");
+
         setTimeout(() => {
-          this.setData({ titleAnimate: true });
+          this.setData({
+            titleAnimate: true,
+            username: name,
+            avatarUrl: avatar,
+          });
+          this.fetchPlayerProgress();
         }, 50);
       }
     },
@@ -138,6 +163,45 @@ Component({
           }
         },
       });
-    }
-  }
+    },
+
+    // 获取个人游戏进度
+    async fetchPlayerProgress() {
+      try {
+        const res = await request("/player_progress");
+        const { total_time, completed_questions, accuracy, level } = res;
+        this.setData({
+          totalTime: this.formatTime(total_time),
+          completedQuestions: completed_questions,
+          accuracy: (accuracy * 100).toFixed(2),
+          level: levelOptions[level as keyof typeof levelOptions] || "未知等级",
+        });
+      } catch (error) {
+        console.error("获取个人游戏进度失败:", error);
+      }
+    },
+
+    // 格式化时间显示
+    formatTime(seconds: number): string {
+      const minute = 60;
+      const hour = 3600;
+      const day = 86400;
+      const month = 2592000; // 30天
+      const year = 31536000; // 365天
+
+      if (seconds >= year) {
+        return `${(seconds / year).toFixed(1)}年`;
+      } else if (seconds >= month) {
+        return `${(seconds / month).toFixed(1)}个月`;
+      } else if (seconds >= day) {
+        return `${(seconds / day).toFixed(1)}天`;
+      } else if (seconds >= hour) {
+        return `${(seconds / hour).toFixed(1)}小时`;
+      } else if (seconds >= minute) {
+        return `${(seconds / minute).toFixed(1)}分钟`;
+      } else {
+        return `${seconds}秒`;
+      }
+    },
+  },
 });

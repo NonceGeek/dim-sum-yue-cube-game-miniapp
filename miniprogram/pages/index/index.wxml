@@ -6,7 +6,7 @@
       <view class="header">
         <view class="header-option">
           <text class="title">今日游戏进度</text>
-          <t-progress theme="circle" percentage="80" size="120rpx" status="active" color="#7c5cff" />
+          <t-progress theme="circle" percentage="{{todayProgress}}" size="120rpx" status="active" color="#7c5cff" />
         </view>
       </view>
       <view class="subtitle">
@@ -16,14 +16,14 @@
       <t-row gutter="16" class="stats">
         <t-col span="8">
           <view class="stat-card">
-            <view class="stat-value">5</view>
+            <view class="stat-value">{{completedQuestions}}</view>
             <view class="stat-title">完成题数</view>
           </view>
         </t-col>
 
         <t-col span="8">
           <view class="stat-card">
-            <view class="stat-value">3</view>
+            <view class="stat-value">{{consecutiveDays}}</view>
             <view class="stat-title">连续天数</view>
           </view>
         </t-col>

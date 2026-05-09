@@ -1,38 +1,44 @@
 <view class="container-wrap {{themeMode === 'auto' ? '' : (currentTheme === 'dark' ? 'theme-dark' : 'theme-light')}}">
   <swiper indicator-dots="{{false}}" autoplay="{{false}}" circular="{{false}}" interval="3000" duration="500"
     class="page-swiper" bindchange="onSwiperChange" current="{{currentSwiperIndex}}">
-    <swiper-item>
+    <swiper-item class="page-swiper-item">
       <scroll-view scroll-y class="scroll-content">
         <slot name="page-content"></slot>
       </scroll-view>
     </swiper-item>
 
-    <swiper-item>
+    <swiper-item class="page-swiper-item">
       <scroll-view scroll-y class="scroll-content">
         <view class="game-status">
           <view class="profile-card">
             <view class="user-section">
-              <t-avatar class="avatar" shape="circle" size="large" icon="user" />
+              <block wx:if="{{avatarUrl}}">
+                <t-image shape="circle" src="{{avatarUrl}}" alt="{{username}}" width="80rpx"
+                  height="80rpx" />
+              </block>
+              <block wx:else>
+                <t-avatar shape="circle" size="medium">{{username[0]}}</t-avatar>
+              </block>
               <view class="user-details">
-                <view class="username">用户</view>
+                <view class="username">{{username}}</view>
                 <view class="user-title {{titleAnimate ? 'user-title--animate' : ''}}">
                   <view class="user-title__shine"></view>
-                  粤语达人
+                  {{level}}
                 </view>
               </view>
             </view>
 
             <view class="stats-row">
               <view class="stat-item">
-                <view class="stat-value">12小时</view>
+                <view class="stat-value">{{totalTime}}</view>
                 <view class="stat-title">总游戏时长</view>
               </view>
               <view class="stat-item">
-                <view class="stat-value">80</view>
+                <view class="stat-value">{{completedQuestions}}</view>
                 <view class="stat-title">完成题目</view>
               </view>
               <view class="stat-item">
-                <view class="stat-value completion-rate">30%</view>
+                <view class="stat-value completion-rate">{{accuracy}}%</view>
                 <view class="stat-title">正确率</view>
               </view>
             </view>
@@ -60,6 +66,7 @@
             退出登录
           </t-button>
         </view>
+        <view class="version-hint">Version: {{version}}</view>
       </scroll-view>
     </swiper-item>
   </swiper>

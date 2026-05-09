@@ -29,4 +29,9 @@ interface IAppOption {
   getTheme: any;
   getSceneMap(): Record<string, SceneTypeInfo>;
   getSceneType(scene: string): SceneTypeInfo;
+  restoreGlobalData(): void;
+  handleLoginSuccess(data: any): void;
+  setThemeMode(mode: ThemeMode): void;
+  doPhoneLogin(phone: string, smsCode: string): Promise<string>;
+  doSendSms(phone: string): Promise<any>;
 }

@@ -629,6 +629,7 @@ page {
   position: relative;
   margin-bottom: 16rpx;
   border-radius: 16rpx;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .cell-wrapper::before {
@@ -716,4 +717,10 @@ page {
 /* Cell 箭头 */
 .custom-cell .t-cell__right-icon {
   color: var(--text-muted) !important;
+}
+
+/* t-action-sheet 弹出框显示在 custom-dots 之上 */
+t-action-sheet,
+t-action-sheet .t-popup {
+  z-index: 100 !important;
 }

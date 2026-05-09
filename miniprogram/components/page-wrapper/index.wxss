@@ -4,7 +4,7 @@
   height: 100vh;
 }
 
-swiper-item {
+.page-swiper-item {
   height: 100%;
 }
 
@@ -16,10 +16,6 @@ swiper-item {
 }
 
 /* action-sheet弹出框显示在custom-dots之上 */
-t-action-sheet,
-t-action-sheet .t-popup {
-  z-index: 100 !important;
-}
 
 /* 个人中心预览样式 */
 .game-status {
@@ -284,4 +280,10 @@ t-action-sheet .t-popup {
   margin-top: 8rpx;
   font-size: 24rpx;
   color: #888;
+}
+
+.version-hint {
+  display: flex;
+  justify-content: center;
+  color: var(--text-primary);
 }

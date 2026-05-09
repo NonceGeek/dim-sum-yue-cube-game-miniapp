@@ -1,93 +1,27 @@
+import request from "../../utils/http";
+import ENV from "../../config/setting";
+
 interface Question {
-  scene?: string;
-  imageUrl?: string;
-  text?: string;
-  dialogueLines?: Array<{
-    role: "system" | "user";
-    icon: string;
-    text: string;
-  }>;
-  options?: Array<{
-    text: string;
-    pronunciation?: string;
-  }>;
+  id: string;
+  scene_id?: string;
+  scenario?: string;
+  options?: { text: string; pronunciation: string }[];
+  question: string;
+  meaning?: string;
   jyutping?: string;
-  audio_url?: string;
-  correctIndex: number;
+  audio?: string;
+  answerIndex?: number;
+  stemPre: string;
+  stemPost: string;
 }
 
-// 模拟题目数据
-const MOCK_QUESTIONS: Record<string, Question[]> = {
-  context: [
-    {
-      scene: "茶餐厅",
-      dialogueLines: [
-        { role: "system", icon: "Q", text: "你想食啲乜？" },
-        { role: "user", icon: "A", text: "唔该，我要一个___" },
-      ],
-      options: [
-        { text: "叉烧饭", pronunciation: "chaa1 siu1 faan6" },
-        { text: "白切鸡", pronunciation: "baak6 cit3 gai1" },
-        { text: "烧鹅", pronunciation: "siu1 ngo5" },
-        { text: "云吞面", pronunciation: "wan4 tan1 min6" },
-      ],
-      correctIndex: 0,
-    },
-    {
-      scene: "便利店",
-      dialogueLines: [
-        { role: "system", icon: "Q", text: "今日好热喎！" },
-        { role: "user", icon: "A", text: "系啊，我要买支___" },
-      ],
-      options: [
-        { text: "水", pronunciation: "seoi2" },
-        { text: "雪糕", pronunciation: "syut3 gou1" },
-        { text: "汽水", pronunciation: "hei3 seoi2" },
-        { text: "咖啡", pronunciation: "gaa3 fe1" },
-      ],
-      correctIndex: 2,
-    },
-    {
-      scene: "问路",
-      dialogueLines: [
-        { role: "system", icon: "Q", text: "唔该，地铁站喺边度呀？" },
-        { role: "user", icon: "A", text: "直行，然后___就系了" },
-      ],
-      options: [
-        { text: "左转", pronunciation: "zo2 zyun2" },
-        { text: "右转", pronunciation: "jau6 zyun2" },
-        { text: "掉头", pronunciation: "diu3 tau4" },
-        { text: "转弯", pronunciation: "waan1 zyun1" },
-      ],
-      correctIndex: 0,
-    },
-  ],
-  image: [],
-  sound: [
-    {
-      text: "我不吃辣的东西",
-      jyutping: "我(ngo5)唔(m4)食(sik6)辣(laat6)嘅(ge3)嘢(je5)",
-      audio_url: "https://example.com/我不吃辣的东西.mp3",
-      correctIndex: 0,
-    },
-    {
-      text: "我不吃甜的东西",
-      jyutping: "我(ngo5)唔(m4)食(sik6)甜(tim4)嘅(ge3)嘢(je5)",
-      audio_url: "https://example.com/我不吃甜的东西.mp3",
-      correctIndex: 1,
-    },
-    {
-      text: "我不吃香菜",
-      jyutping: "我 (ngo5) 唔 (m4) 食 (sik6) 香菜 (hoeng1 coi3)",
-      audio_url: "https://example.com/我不吃香菜.mp3",
-      correctIndex: 2,
-    },
-  ],
-};
+const ERROR_MESSAGE = "，请稍后重试";
 
 Page({
   data: {
     scene: "",
+    sceneId: "",
+    category: "",
     questions: [] as Question[],
     currentIndex: 0,
     totalCount: 0,
@@ -104,6 +38,7 @@ Page({
     time: 15 * 1000,
     countDownRunning: true,
     countDownUrgent: false,
+    countDownHandled: false, // 防止 onCountDownFinish 和 onCountDownChange 互相触发
     // 录音相关状态
     recording: false,
     recordTime: 0,
@@ -125,16 +60,32 @@ Page({
     cancelBtn: "取消",
     // image
     imageUrl: "",
+    // OSS 音频播放状态
+    ossAudioPlaying: false,
+    // 答题时间统计
+    questionStartTime: 0, // 当前题目开始答题的时间戳（毫秒）
+    // AI评分按钮是否可用
+    canSubmitAI: false,
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     this.syncTheme();
+    console.log("options:", options);
     const scene = options.scene || "context";
     const app = getApp<any>();
     const info = app.getSceneType(scene);
     console.log("scene:", scene);
-    this.setData({ scene, pageIcon: info.icon, pageText: info.text });
-    this.loadQuestions(scene);
+    this.setData({
+      scene,
+      pageIcon: info.icon,
+      pageText: info.text,
+      category: options.category,
+      sceneId: options.sceneId,
+      ...(scene === "image" ? { questionStartTime: Date.now() } : {}),
+    });
+    if (scene !== "image") {
+      await this.loadQuestions(scene);
+    }
   },
 
   onShow() {
@@ -152,26 +103,39 @@ Page({
     });
   },
 
-  loadQuestions(scene: string) {
-    // 从后端API获取题目，这里用模拟数据
-    const questions = MOCK_QUESTIONS[scene] || MOCK_QUESTIONS["context"];
+  async loadQuestions(scene: string) {
+    const questions = await request(
+      `/question_${scene}?scene_id=${this.data.sceneId}&limit=5`,
+    );
     const totalCount = questions.length;
     console.log("questions:", questions[0]);
-    this.setData({
-      questions,
-      totalCount,
-      currentQuestion: questions[0],
-      progressPercent: Math.round((1 / totalCount) * 100),
-      countDownRunning: true,
-      countDownUrgent: false,
-    });
+    this.setData(
+      {
+        questions,
+        totalCount,
+        currentQuestion: questions[0],
+        progressPercent: Math.round((1 / totalCount) * 100),
+        countDownRunning: false, // 先不启动倒计时
+        countDownUrgent: false,
+        time: 15 * 1000, // 重置倒计时时间
+      },
+      () => {
+        // 数据设置完成后，再启动倒计时和开始计时答题时间
+        setTimeout(() => {
+          this.setData({
+            countDownRunning: true,
+            questionStartTime: Date.now(),
+          });
+        }, 100);
+      },
+    );
   },
 
   onOptionSelect(e: any) {
     console.log("dddd:", e.currentTarget.dataset.index);
     const index = e.currentTarget.dataset.index;
     this.setData({ selectedIndex: index }, () => {
-      this.onSubmit();
+      this.submitAnswer();
     });
   },
 
@@ -182,7 +146,8 @@ Page({
     });
   },
 
-  onShowConfirm() {
+  // ai评分
+  async onShowConfirm() {
     const { selectedBtn } = this.data;
     if (selectedBtn === "cancel") {
       this.setData({
@@ -193,77 +158,242 @@ Page({
       });
     } else {
       //点击了ai评分
+      wx.showLoading({
+        title: "正在ai评分中",
+      });
+      await this.submitAnswer();
     }
   },
 
-  onSubmit() {
-    const { currentQuestion, selectedIndex, correctCount } = this.data;
-    if (selectedIndex === null) {
-      console.log("selectedIndex is null, returning");
+  // 提交答案
+  onCloseDialogAndNextQuestion() {
+    // 3秒后自动关闭弹窗
+    setTimeout(() => {
+      this.setData({
+        showResultDialog: false,
+        countDownHandled: false,
+        time: 15 * 1000,
+      });
+      // 延迟一点再进入下一题，让用户看到结果
+      setTimeout(() => {
+        this.onResultConfirm();
+      }, 300);
+    }, 2000);
+  },
+
+  // 提交答案到服务器
+  async submitAnswer() {
+    const { scene } = this.data;
+    try {
+      if (scene === "context") await this.doContextSceneSubmit();
+      if (scene === "sound") await this.doSoundSceneSubmit();
+      if (scene === "image") await this.doImageSceneSubmit();
+
+      if (["context", "sound"].includes(scene)) {
+        this.onCloseDialogAndNextQuestion();
+      }
+    } catch (error) {
+      console.error("提交答案失败:", error);
+      // 即使提交失败，也显示结果
+      this.onCloseDialogAndNextQuestion();
+    }
+  },
+  async doContextSceneSubmit() {
+    const { currentQuestion, selectedIndex, questionStartTime, correctCount } =
+      this.data;
+    if (selectedIndex === null || !currentQuestion.id) {
+      console.log("selectedIndex is null or no question id, returning");
       return;
     }
-
-    const isCorrect = selectedIndex === currentQuestion.correctIndex;
-    const newCorrectCount = isCorrect ? correctCount + 1 : correctCount;
-    this.setData(
-      {
+    const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
+    const params = {
+      mode: "context",
+      question_id: currentQuestion.id,
+      selected_answer: currentQuestion?.options?.[selectedIndex]?.text || "",
+      selected_index: selectedIndex,
+      time: answerTime,
+    };
+    const submitAnswer = await request("/submit_answer", {
+      method: "POST",
+      data: params,
+    });
+    if (submitAnswer.success) {
+      const isCorrect = selectedIndex === currentQuestion.answerIndex;
+      const newCorrectCount = isCorrect ? correctCount + 1 : correctCount;
+      this.setData({
         showResultDialog: true,
         isCorrect,
         resultMessage: isCorrect ? "恭喜，答对了！" : "再接再厉！",
         correctCount: newCorrectCount,
-      },
-      () => {
-        // 3秒后自动关闭弹窗
+      });
+    }
+  },
+  async doSoundSceneSubmit() {
+    const { currentQuestion, scene, url, questionStartTime } = this.data;
+    const id = currentQuestion.id;
+    const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
+    const params = {
+      mode: scene,
+      question_id: id,
+      time: answerTime,
+      audio: url,
+    };
+
+    const submitAnswer = await request("/submit_answer", {
+      method: "POST",
+      data: params,
+    });
+    wx.hideLoading();
+    const dialogInfo = {
+      showResultDialog: true,
+      isCorrect: false,
+      resultMessage: "",
+    };
+    if (submitAnswer.error) {
+      dialogInfo.resultMessage = submitAnswer.error + ERROR_MESSAGE;
+    } else if (!submitAnswer.is_correct) {
+      dialogInfo.resultMessage = submitAnswer.comment + ERROR_MESSAGE;
+    } else {
+      dialogInfo.isCorrect = true;
+      dialogInfo.resultMessage = submitAnswer.comment;
+    }
+    this.setData(dialogInfo);
+    setTimeout(() => {
+      this.setData({
+        showResultDialog: false,
+      });
+    }, 2000);
+  },
+  async doImageSceneSubmit() {
+    const { category, imageUrl, url, questionStartTime } = this.data;
+    console.log("url:", url);
+    const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
+
+    try {
+      const picvoiceReview = await request("/picvoice_review", {
+        method: "POST",
+        data: {
+          scene: category,
+          imageUrl,
+          audioUrl: url,
+          time: answerTime,
+        },
+      });
+
+      wx.hideLoading();
+      console.log("picvoiceReview:", picvoiceReview);
+
+      if (!picvoiceReview.overallPass || picvoiceReview.error) {
+        this.setData({
+          showResultDialog: true,
+          isCorrect: false,
+          resultMessage:
+            picvoiceReview.comment || picvoiceReview.error + ERROR_MESSAGE,
+        });
+        // 2秒后自动关闭弹窗
         setTimeout(() => {
-          this.setData({ showResultDialog: false, time: 15 * 1000 });
-          // 延迟一点再进入下一题，让用户看到结果
+          this.setData({
+            showResultDialog: false,
+          });
+        }, 2000);
+      } else {
+        console.log("picvoiceReview:", picvoiceReview);
+        this.setData({
+          showResultDialog: true,
+          isCorrect: true,
+          resultMessage: picvoiceReview.comment,
+        });
+        // 2秒后自动关闭弹窗并返回上一页
+        setTimeout(() => {
+          this.setData({
+            showResultDialog: false,
+          });
           setTimeout(() => {
-            this.onResultConfirm();
+            wx.navigateBack();
           }, 300);
         }, 2000);
-      },
-    );
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error("图片识音评分失败:", error);
+      this.setData({
+        showResultDialog: true,
+        isCorrect: false,
+        resultMessage: error.errMsg + ERROR_MESSAGE,
+      });
+      setTimeout(() => {
+        this.setData({
+          showResultDialog: false,
+        });
+      }, 2000);
+    }
   },
 
   onResultConfirm() {
-    const { currentIndex, totalCount, questions } = this.data;
+    const { currentIndex, totalCount, questions, scene } = this.data;
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= totalCount) {
-      // 答题结束，停止倒计时
-      this.setData({
-        showConfirm: true,
-        title: "答题完成",
-        content: `你答对了 ${this.data.correctCount} / ${totalCount} 题`,
-        showCancel: false,
-        time: 0,
-      });
-      return;
+      if (scene === "context") {
+        // 答题结束，停止倒计时
+        this.setData({
+          showConfirm: true,
+          title: "答题完成",
+          content: `你答对了 ${this.data.correctCount} / ${totalCount} 题`,
+          showCancel: false,
+          time: 0,
+        });
+        return;
+      } else {
+        wx.navigateBack();
+      }
     }
 
-    this.setData({
-      showResultDialog: false,
-      currentIndex: nextIndex,
-      currentQuestion: questions[nextIndex],
-      selectedIndex: null,
-      progressPercent: Math.round(((nextIndex + 1) / totalCount) * 100),
-      countDownRunning: true,
-      countDownUrgent: false,
-    });
+    // 先设置题目数据，不启动倒计时
+    this.setData(
+      {
+        showResultDialog: false,
+        currentIndex: nextIndex,
+        currentQuestion: questions[nextIndex],
+        selectedIndex: null,
+        progressPercent: Math.round(((nextIndex + 1) / totalCount) * 100),
+        countDownRunning: false,
+        countDownUrgent: false,
+        countDownHandled: false,
+        time: 15 * 1000, // 重置倒计时时间
+        url: "",
+        imageUrl: "",
+      },
+      () => {
+        // 题目切换完成后，再启动倒计时和开始计时
+        setTimeout(() => {
+          this.setData({
+            countDownRunning: true,
+            questionStartTime: Date.now(),
+          });
+        }, 100);
+      },
+    );
   },
   onCountDownChange(e: any) {
     const remainingMs = e.detail.ss;
-    // 最后3秒变紧急状态
-    if (remainingMs <= 3 && remainingMs > 0) {
+    const { countDownUrgent, countDownHandled } = this.data;
+    // 防止 finish 已处理后继续触发更新
+    if (countDownHandled) return;
+    // 最后3秒变紧急状态，只在状态真正变化时更新
+    if (remainingMs <= 3 && remainingMs > 0 && !countDownUrgent) {
       this.setData({ countDownUrgent: true });
-    } else {
+    } else if (remainingMs > 3 && countDownUrgent) {
       this.setData({ countDownUrgent: false });
     }
   },
 
   onCountDownFinish() {
+    const { countDownHandled } = this.data;
+    if (countDownHandled) return;
     this.setData(
       {
+        countDownHandled: true,
         showResultDialog: true,
         isCorrect: false,
         resultMessage: "时间到！",
@@ -413,9 +543,62 @@ Page({
   },
 
   saveAudioUrl(filePath: string) {
-    // 此处上传到 OSS，简化处理直接存本地临时路径
-    this.setData({ url: filePath });
-    wx.showToast({ title: "录音完成", icon: "success", duration: 1500 });
+    const { scene } = this.data;
+    console.log("scene:", scene);
+    wx.showLoading({
+      title: "上传中...",
+      mask: true,
+    });
+    try {
+      const token = wx.getStorageSync("accessToken") || "";
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const dateStr = `${year}${month}${day}`;
+      const timestamp = Date.now();
+      console.log("currentQuestion:", this.data.currentQuestion);
+      wx.uploadFile({
+        url: `${ENV.API_BASE_URL}/upload`,
+        filePath: filePath,
+        name: "file",
+        formData: {
+          taskId: this.data.currentQuestion.id,
+          fileName: `${dateStr}_${scene === "image" ? "yue_cube_image" : this.data.currentQuestion.id}_${timestamp}.mp3`,
+        },
+        header: {
+          Authorization: `Bearer ${token}`,
+        },
+        success: (res) => {
+          console.log("上传成功", res);
+          wx.hideLoading();
+
+          const statusCode = res.statusCode;
+          if (statusCode === 200) {
+            const data = JSON.parse(res.data);
+            console.log("音频：", data.url);
+            this.setData({ url: data.url }, () => {
+              this.updateCanSubmitAI();
+            });
+          } else {
+            console.error("解析响应失败：", res.data);
+            const data = JSON.parse(res.data);
+            wx.showToast({
+              title: data.error || "上传失败",
+              icon: "none",
+              duration: 2000,
+            });
+          }
+        },
+        fail: (err) => {
+          console.error("上传失败", err);
+        },
+      });
+      wx.showToast({ title: "录音完成", icon: "success", duration: 1500 });
+    } catch (e) {
+      console.log("上传音频失败：", e);
+      wx.showToast({ title: e.error || "录音失败", icon: "none" });
+    }
   },
 
   onPlayAudio() {
@@ -435,8 +618,67 @@ Page({
     backgroundAudioManager.src = url;
     wx.showToast({ title: "正在播放...", icon: "loading", duration: 1000 });
   },
+
+  // 播放 OSS 音频
+  onPlayOSSAudio(e: any) {
+    const url = e.currentTarget.dataset.url;
+    if (!url) {
+      wx.showToast({ title: "音频地址无效", icon: "none" });
+      return;
+    }
+    console.log("准备播放音频:", url);
+
+    wx.showLoading({
+      title: "加载音频中...",
+    });
+
+    // 使用 BackgroundAudioManager 播放网络音频
+    const backgroundAudioManager = wx.getBackgroundAudioManager();
+
+    // 设置必要属性
+    backgroundAudioManager.title = "粤语音频";
+    backgroundAudioManager.src = url;
+
+    // 播放开始时切换图标
+    backgroundAudioManager.onPlay(() => {
+      console.log("开始播放");
+      wx.hideLoading();
+      this.setData({ ossAudioPlaying: true });
+    });
+
+    // 播放结束时恢复图标
+    backgroundAudioManager.onEnded(() => {
+      console.log("播放结束");
+      this.setData({ ossAudioPlaying: false });
+    });
+
+    // 播放错误时恢复图标
+    backgroundAudioManager.onError((err) => {
+      console.error("音频播放错误:", err);
+      wx.hideLoading();
+      this.setData({ ossAudioPlaying: false });
+      wx.showToast({
+        title: "播放失败",
+        icon: "none",
+        duration: 2000,
+      });
+    });
+
+    // 自然播放完成
+    backgroundAudioManager.onCanplay(() => {
+      console.log("音频可以播放了");
+      wx.hideLoading();
+    });
+  },
+
   onConfirm() {
-    wx.navigateBack();
+    const { currentIndex, totalCount, questions } = this.data;
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= totalCount) {
+      wx.navigateBack();
+    } else {
+      this.setData({ showConfirm: false });
+    }
   },
   onCancel() {
     this.setData({ showConfirm: false });
@@ -448,13 +690,154 @@ Page({
       count: 1,
       mediaType: ["image"],
       sourceType: ["album", "camera"],
-      success: (res) => {
+      success: async (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
-        this.setData({ imageUrl: tempFilePath });
+        const token = wx.getStorageSync("accessToken") || "";
+
+        // 压缩图片
+        wx.showLoading({
+          title: "图片处理中...",
+          mask: true,
+        });
+
+        const compressedFilePath = await new Promise<string>(
+          (resolve, reject) => {
+            wx.compressImage({
+              src: tempFilePath,
+              quality: 80, // 压缩质量 0-100
+              success: (compressRes) => {
+                console.log("压缩成功:", compressRes.tempFilePath);
+                resolve(compressRes.tempFilePath);
+              },
+              fail: (err) => {
+                console.error("压缩失败，使用原图:", err);
+                resolve(tempFilePath); // 压缩失败时使用原图
+              },
+            });
+          },
+        );
+
+        wx.hideLoading();
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const dateStr = `${year}${month}${day}`;
+        const timestamp = Date.now();
+        try {
+          wx.showLoading({
+            title: "上传中...",
+            mask: true,
+          });
+          wx.uploadFile({
+            url: `${ENV.API_BASE_URL}/upload`,
+            filePath: compressedFilePath,
+            name: "file",
+            formData: {
+              taskId: this.data.currentQuestion.id,
+              fileName: `${dateStr}_yue_cube_image_${timestamp}.png`,
+            },
+            header: {
+              Authorization: `Bearer ${token}`,
+            },
+            success: async (uploadRes) => {
+              wx.hideLoading();
+
+              const statusCode = uploadRes.statusCode;
+              console.log("上传响应:", uploadRes);
+
+              if (statusCode === 200) {
+                let data;
+                try {
+                  data = JSON.parse(uploadRes.data);
+
+                  // 获取服务器返回的音频URL
+                  const serverUrl = data.url;
+                  console.log("data:", data);
+                  const image_moderation = await request("/image_moderation", {
+                    method: "POST",
+                    data: { imageUrl: serverUrl },
+                  });
+                  console.log("image_moderation:", image_moderation);
+                  if (image_moderation.error) {
+                    console.error("图片审核失败:", image_moderation);
+                    wx.showToast({
+                      title: image_moderation.error || "图片审核失败",
+                      icon: "error",
+                      duration: 2000,
+                    });
+                    return;
+                  } else if (!image_moderation.pass) {
+                    wx.showToast({
+                      title: image_moderation.comment || "图片审核失败",
+                      icon: "error",
+                      duration: 2000,
+                    });
+                    return;
+                  } else {
+                    this.setData({ imageUrl: serverUrl }, () => {
+                      this.updateCanSubmitAI();
+                    });
+                    wx.showToast({
+                      title: "上传图片成功",
+                      icon: "success",
+                      duration: 1500,
+                    });
+                  }
+                } catch (e) {
+                  console.error("解析响应失败:", e);
+                  wx.showToast({
+                    title: e.errMsg || "上传失败",
+                    icon: "error",
+                    duration: 2000,
+                  });
+                  return;
+                }
+              } else {
+                console.error("上传失败，状态码:", statusCode);
+                const data = JSON.parse(uploadRes.data);
+                wx.showToast({
+                  title: data.error || "上传失败",
+                  icon: "error",
+                  duration: 2000,
+                });
+              }
+            },
+            fail: (err) => {
+              wx.hideLoading();
+              console.error("上传失败:", err);
+              wx.showToast({
+                title: "上传失败",
+                icon: "error",
+                duration: 2000,
+              });
+            },
+          });
+        } catch (err) {
+          console.log("上传图片出错：", err);
+          wx.showToast({ title: err.errMsg || "上传图片失败", icon: "none" });
+        }
       },
       fail: (err) => {
         console.error("选择图片失败", err);
       },
     });
+  },
+
+  // 更新 AI 评分按钮是否可用
+  updateCanSubmitAI() {
+    const { scene, url, imageUrl } = this.data;
+    let canSubmit = false;
+
+    if (scene === "image") {
+      // image 模式：需要 url 和 imageUrl 都存在
+      canSubmit = !!url && !!imageUrl;
+    } else if (scene === "sound") {
+      // sound 模式：只需要 url 存在
+      canSubmit = !!url;
+    }
+
+    this.setData({ canSubmitAI: canSubmit });
   },
 });

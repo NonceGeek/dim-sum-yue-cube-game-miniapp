@@ -1,3 +1,5 @@
+import request from "../../utils/http";
+
 Page({
   /**
    * 页面的初始数据
@@ -9,6 +11,9 @@ Page({
     sceneList: [] as Array<{ id: string; icon: string; text: string }>,
     currentTheme: "light" as "light" | "dark",
     themeMode: "auto" as "auto" | "light" | "dark",
+    todayProgress: 0,
+    consecutiveDays: 0,
+    completedQuestions: 0,
   },
 
   /**
@@ -22,10 +27,12 @@ Page({
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow() {
+  async onShow() {
     this.syncTheme();
     // 重置active状态
     this.setData({ activeCell: "" });
+
+    await this.getTodayProgress();
   },
 
   /**
@@ -70,13 +77,6 @@ Page({
   },
 
   /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-    // 重置active状态
-    this.setData({ activeCell: "" });
-  },
-  /**
    * 用户点击右上角分享
    */
   onShareAppMessage() {
@@ -113,5 +113,13 @@ Page({
       });
     }, 200);
   },
-
+  async getTodayProgress() {
+    const { today_progress, consecutive_days, completed_questions } =
+      await request("/today_progress");
+    this.setData({
+      todayProgress: today_progress * 100,
+      consecutiveDays: consecutive_days,
+      completedQuestions: completed_questions,
+    });
+  },
 });

@@ -13,11 +13,11 @@
           <view class="profile-card">
             <view class="user-section">
               <block wx:if="{{avatarUrl}}">
-                <t-image shape="circle" src="{{avatarUrl}}" alt="{{username}}" width="80rpx"
-                  height="80rpx" />
+                <t-image shape="circle" src="{{avatarUrl}}" alt="{{username}}" width="120rpx"
+                  height="120rpx" />
               </block>
-              <block wx:else>
-                <t-avatar shape="circle" size="medium">{{username[0]}}</t-avatar>
+              <block wx:else> 
+                <t-avatar shape="circle" size="large">{{username[0]}}</t-avatar>
               </block>
               <view class="user-details">
                 <view class="username">{{username}}</view>

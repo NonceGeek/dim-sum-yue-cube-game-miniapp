@@ -146,11 +146,21 @@ Page({
    * 点击场景卡片
    */
   onSceneCellTap(e: any) {
+    const { sceneType } = this.data;
     const sceneId = e.currentTarget.dataset.id;
     const category = e.currentTarget.dataset.category;
+    const total = e.currentTarget.dataset.total;
     this.setData({
       activeCell: sceneId,
     });
+    if (sceneType !== "image" && total === 0) {
+      wx.showModal({
+        title: "提示",
+        content: "该场景下题目还在准备中，请稍后再试",
+        showCancel: false
+      })
+      return;
+    }
     setTimeout(() => {
       wx.navigateTo({
         url: `/pages/question/question?scene=${this.data.sceneType}&sceneId=${sceneId}&category=${category}`,

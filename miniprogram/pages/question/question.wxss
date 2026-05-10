@@ -121,7 +121,7 @@
   font-size: 28rpx;
 }
 
-.dialogue-item.left {
+/* .dialogue-item.left {
   flex-direction: row;
   padding-left: 16rpx;
 }
@@ -129,7 +129,7 @@
 .dialogue-item.right {
   flex-direction: row-reverse;
   padding-right: 16rpx;
-}
+} 
 
 .dialogue-icon {
   width: 48rpx;
@@ -139,23 +139,23 @@
   justify-content: center;
   font-size: 40rpx;
   flex-shrink: 0;
-}
+}*/
 
 .dialogue-bubble {
   flex: 1;
   padding: 20rpx 32rpx;
   background: var(--bg-input);
   border-radius: 20rpx;
-  max-width: 75%;
+  max-width: 100%;
 }
 
-.dialogue-item.left .dialogue-bubble {
+/* .dialogue-item.left .dialogue-bubble {
   border-top-left-radius: 8rpx;
 }
 
 .dialogue-item.right .dialogue-bubble {
   border-top-right-radius: 8rpx;
-}
+} */
 
 .dialogue-text {
   color: var(--text-primary);

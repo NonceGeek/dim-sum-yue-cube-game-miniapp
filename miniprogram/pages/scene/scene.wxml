@@ -7,7 +7,7 @@
         <view wx:for="{{sceneList}}" wx:key="id"
           class="cell-wrapper {{showAnimation ? 'cell-anim' : ''}} {{activeCell === item.id ? 'active' : ''}}"
           style="animation-delay: {{index * 0.15}}s"
-          bind:tap="onSceneCellTap" data-category="{{item.scene}}" data-id="{{item.id}}">
+          bind:tap="onSceneCellTap" data-category="{{item.scene}}" data-id="{{item.id}}" data-total="{{item.total}}">
           <t-cell bordered="{{false}}" title="{{item.scene}}" leftIcon="{{item.icon}}" description="{{item.total ? item.description : ''}}" hover
             class="custom-cell" />
         </view>

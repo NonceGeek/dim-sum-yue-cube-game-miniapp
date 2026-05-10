@@ -33,11 +33,11 @@
                 <!-- 场景标题 -->
                 <view class="scene-title">场景：{{currentQuestion.scenario}}</view>
                 <!-- <block wx:for="{{currentQuestion.dialogueLines}}" wx:key="index"> -->
-                <view class="dialogue-item left">
-                  <view class="dialogue-icon">
+                <view class="dialogue-item">
+                  <!-- <view class="dialogue-icon">
                     <t-avatar class="avatar" t-class="square-avatar" shape="round" size="small">Q
                     </t-avatar>
-                  </view>
+                  </view> -->
                   <view class="dialogue-bubble">
                     <view class="dialogue-text">{{currentQuestion.stemPre}}____{{currentQuestion.stemPost}}</view>
                   </view>

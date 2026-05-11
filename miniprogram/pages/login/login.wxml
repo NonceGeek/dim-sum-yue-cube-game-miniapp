@@ -52,7 +52,7 @@
               maxlength="6" clearable="{{true}}" />
             <t-button class="send-code-btn" size="medium" variant="outline" bind:tap="sendCode"
               disabled="{{counting || !phone}}" loading="{{sendingCode}}">
-              <t-count-down wx:if="{{counting}}" time="{{60000}}" format="ss秒" bind:finish="onCountDownFinish" />
+              <t-count-down wx:if="{{counting}}" time="{{60000}}" format="ss秒" bind:finish="onCountDownFinish" t-class="custom-count-down"/>
               <text wx:else>{{codeButtonText}}</text>
             </t-button>
           </view>

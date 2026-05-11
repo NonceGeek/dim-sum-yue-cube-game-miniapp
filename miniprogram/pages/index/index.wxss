@@ -67,7 +67,6 @@
   margin-bottom: 24rpx;
 }
 
-
 .stat-card button {
   padding: 0;
   margin: 0;
@@ -101,6 +100,7 @@
 }
 
 .t-progress__info {
+  font-size: 28rpx !important;
   color: var(--text-primary) !important;
 }
 

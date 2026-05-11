@@ -22,6 +22,10 @@
   margin-bottom: 16rpx;
 }
 
+.t-progress__info {
+  color: var(--text-primary) !important;
+}
+
 .progress-text {
   font-size: 28rpx;
   color: var(--text-secondary, #666);

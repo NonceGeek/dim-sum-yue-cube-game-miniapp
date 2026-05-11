@@ -140,7 +140,7 @@ Page({
     } catch (err: any) {
       console.error("发送验证码失败", err);
       wx.showToast({
-        title: String(err) || "发送失败",
+        title: err.error || "发送失败",
         icon: "none",
         duration: 2000,
       });
@@ -206,7 +206,7 @@ Page({
     } catch (err: any) {
       console.error("手机号登录失败", err);
       wx.showToast({
-        title: String(err) || "登录失败",
+        title: String(err.error) || "登录失败",
         icon: "none",
         duration: 2000,
       });

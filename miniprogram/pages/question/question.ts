@@ -363,6 +363,7 @@ Page({
         time: 15 * 1000, // 重置倒计时时间
         url: "",
         imageUrl: "",
+        canSubmitAI: false,
       },
       () => {
         // 题目切换完成后，再启动倒计时和开始计时
@@ -672,7 +673,10 @@ Page({
   },
 
   onConfirm() {
-    const { currentIndex, totalCount, questions } = this.data;
+    const { currentIndex, totalCount, selectedBtn } = this.data;
+    if (selectedBtn === "cancel") {
+      wx.navigateBack();
+    }
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalCount) {
       wx.navigateBack();

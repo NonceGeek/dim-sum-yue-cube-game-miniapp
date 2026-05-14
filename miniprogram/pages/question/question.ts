@@ -639,6 +639,7 @@ Page({
   },
 
   playOSSAudio({ url, title }: { url: string; title: string }) {
+    if (this.data.ossAudioPlaying) return;
     wx.showLoading({
       title: "加载音频中...",
     });

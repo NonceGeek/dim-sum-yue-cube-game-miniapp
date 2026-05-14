@@ -159,7 +159,7 @@ Page({
     } else {
       //点击了ai评分
       wx.showLoading({
-        title: "正在ai评分中",
+        title: "正在AI评分中",
       });
       await this.submitAnswer();
     }
@@ -476,10 +476,23 @@ Page({
               this.doStartRecord();
             },
             fail: () => {
+              // 用户拒绝后，引导去设置页
               wx.showModal({
-                title: "提示",
-                content: "需要录音权限才能使用此功能",
-                showCancel: false,
+                title: "需要录音权限",
+                content: "开启录音权限后才能使用语音功能",
+                confirmText: "去开启",
+                success: (modalRes) => {
+                  if (modalRes.confirm) {
+                    wx.openSetting({
+                      success: (settingRes) => {
+                        // 用户重新开启
+                        if (settingRes.authSetting["scope.record"]) {
+                          this.doStartRecord();
+                        }
+                      },
+                    });
+                  }
+                },
               });
             },
           });
@@ -611,13 +624,7 @@ Page({
       return;
     }
 
-    const backgroundAudioManager = wx.getBackgroundAudioManager();
-    if (backgroundAudioManager.src) {
-      backgroundAudioManager.stop();
-    }
-    backgroundAudioManager.title = "录音播放";
-    backgroundAudioManager.src = url;
-    wx.showToast({ title: "正在播放...", icon: "loading", duration: 1000 });
+    this.playOSSAudio({ url, title: "录音播放" });
   },
 
   // 播放 OSS 音频
@@ -628,7 +635,10 @@ Page({
       return;
     }
     console.log("准备播放音频:", url);
+    this.playOSSAudio({ url, title: "粤语音频" });
+  },
 
+  playOSSAudio({ url, title }: { url: string; title: string }) {
     wx.showLoading({
       title: "加载音频中...",
     });
@@ -637,7 +647,7 @@ Page({
     const backgroundAudioManager = wx.getBackgroundAudioManager();
 
     // 设置必要属性
-    backgroundAudioManager.title = "粤语音频";
+    backgroundAudioManager.title = title;
     backgroundAudioManager.src = url;
 
     // 播放开始时切换图标

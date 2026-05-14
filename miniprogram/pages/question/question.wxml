@@ -81,7 +81,7 @@
             <view class="audio-controls">
               <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
                 bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
-                <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon"
+                <t-icon name="{{url ? (ossAudioPlaying ? 'pause' : 'play') : 'sound'}}" size="48rpx" custom-class="mic-icon"
                   color="{{recording ? '#fff' : ''}}" />
                 <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
               </view>
@@ -116,7 +116,7 @@
         <view class="audio-controls">
           <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
             bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
-            <t-icon name="{{url ? 'play' : 'sound'}}" size="48rpx" custom-class="mic-icon"
+            <t-icon name="{{url ? (ossAudioPlaying ? 'pause' : 'play')  : 'sound'}}" size="48rpx" custom-class="mic-icon"
               color="{{recording ? '#fff' : ''}}" />
             <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
           </view>

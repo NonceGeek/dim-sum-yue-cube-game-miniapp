@@ -1,5 +1,4 @@
 import request from "../../utils/http";
-import Message from "../../miniprogram_npm/tdesign-miniprogram/message-item/message-item";
 
 Page({
   /**

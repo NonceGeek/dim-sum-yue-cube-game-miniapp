@@ -65,7 +65,7 @@ Page({
     } catch (err: any) {
       console.error("Login failed", err);
       wx.showToast({
-        title: String(err) || "登录失败",
+        title: err?.error || err?.message || err?.errMsg || "登录失败",
         icon: "none",
         duration: 2000,
       });
@@ -140,7 +140,11 @@ Page({
     } catch (err: any) {
       console.error("发送验证码失败", err);
       wx.showToast({
-        title: err.error || "发送失败",
+        title:
+          (typeof err?.error === "string" ? err.error : null) ||
+          err?.message ||
+          err?.errMsg ||
+          "发送失败",
         icon: "none",
         duration: 2000,
       });
@@ -206,7 +210,11 @@ Page({
     } catch (err: any) {
       console.error("手机号登录失败", err);
       wx.showToast({
-        title: String(err.error) || "登录失败",
+        title:
+          (typeof err?.error === "string" ? err.error : null) ||
+          err?.message ||
+          err?.errMsg ||
+          "登录失败",
         icon: "none",
         duration: 2000,
       });

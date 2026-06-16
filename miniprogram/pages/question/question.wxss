@@ -298,7 +298,7 @@
   border-radius: 999px !important;
 }
 
-/* AI��分按钮 - 与 task.wxss 的正确按钮一致 */
+/* AI评分按钮 - 与 task.wxss 的正确按钮一致 */
 .ai-button {
   flex: 1;
   max-width: 200rpx;
@@ -427,22 +427,61 @@
   color: var(--text-primary) !important;
 }
 
-.info-dialog button {
+.info-dialog .t-dialog__footer {
+  display: flex !important;
+  flex-direction: row !important;
+  padding: 48rpx !important;
+  gap: 24rpx;
+}
+
+.info-dialog .t-dialog__footer--full {
+  padding: 48rpx !important;
+}
+
+.info-dialog .t-dialog__button {
+  max-width: 200rpx;
+  border-radius: var(--radius-full) !important;
+  --td-button-border-radius: var(--radius-full);
+}
+
+.info-dialog .t-dialog__button--text::before {
+  display: none !important;
+}
+
+.info-dialog-confirm-btn {
+  flex: 1;
+  height: 80rpx !important;
   background: var(--gradient-primary) !important;
   border: none !important;
-  outline: none !important;
+  color: #fff !important;
+  border-radius: var(--radius-full) !important;
+  box-shadow: var(--shadow-primary) !important;
 }
 
-.info-dialog button::after {
+.info-dialog-confirm-btn::after,
+.info-dialog-cancel-btn::after {
   border: none !important;
 }
 
-.info-dialog .t-button__content {
+.info-dialog-confirm-btn .t-button__text,
+.info-dialog-confirm-btn .t-button__content {
   color: #fff !important;
+  font-size: 32rpx !important;
 }
-.info-dialog .t-dialog__button--cancel {
+
+.info-dialog-cancel-btn {
+  flex: 1;
+  height: 80rpx !important;
+  position: relative;
   background: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-full) !important;
+  box-shadow: none !important;
 }
-.info-dialog .t-dialog__button--cancel .t-button__content {
-  color: var(--text-muted) !important;
+
+.info-dialog-cancel-btn .t-button__text,
+.info-dialog-cancel-btn .t-button__content {
+  color: var(--text-secondary) !important;
+  font-size: 32rpx !important;
 }

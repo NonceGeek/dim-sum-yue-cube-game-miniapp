@@ -92,6 +92,21 @@ Page({
     this.syncTheme();
   },
 
+  onUnload() {
+    if (this.data.touchStartTimer) {
+      clearTimeout(this.data.touchStartTimer);
+    }
+    if (this.data.recordTimer) {
+      clearInterval(this.data.recordTimer);
+    }
+    const recorderManager = (this as any).recorderManager;
+    if (this.data.recording && recorderManager) {
+      recorderManager.stop();
+    }
+    wx.hideLoading();
+    wx.hideToast();
+  },
+
   syncTheme() {
     const app = getApp<any>();
     const themeMode = app.getThemeMode();
@@ -605,11 +620,18 @@ Page({
           }
         },
         fail: (err) => {
+          wx.hideLoading();
           console.error("上传失败", err);
+          wx.showToast({
+            title: "上传失败",
+            icon: "none",
+            duration: 2000,
+          });
         },
       });
       wx.showToast({ title: "录音完成", icon: "success", duration: 1500 });
     } catch (e) {
+      wx.hideLoading();
       console.log("上传音频失败：", e);
       wx.showToast({ title: e.error || "录音失败", icon: "none" });
     }
@@ -686,10 +708,13 @@ Page({
   onConfirm() {
     const { currentIndex, totalCount, selectedBtn } = this.data;
     if (selectedBtn === "cancel") {
+      this.setData({ showConfirm: false, selectedBtn: null });
       wx.navigateBack();
+      return;
     }
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalCount) {
+      this.setData({ showConfirm: false });
       wx.navigateBack();
     } else {
       this.setData({ showConfirm: false });
@@ -830,11 +855,13 @@ Page({
             },
           });
         } catch (err) {
+          wx.hideLoading();
           console.log("上传图片出错：", err);
           wx.showToast({ title: err.errMsg || "上传图片失败", icon: "none" });
         }
       },
       fail: (err) => {
+        wx.hideLoading();
         console.error("选择图片失败", err);
       },
     });

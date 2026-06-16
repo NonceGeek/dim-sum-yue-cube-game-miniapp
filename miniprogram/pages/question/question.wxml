@@ -142,7 +142,8 @@
     bind:confirm="onResultConfirm">
   </t-dialog>
 
-  <t-dialog t-class="info-dialog" data-type="{{confirmType}}" visible="{{showConfirm}}" title="{{title}}"
+  <t-dialog t-class="info-dialog" t-class-confirm="info-dialog-confirm-btn"
+    t-class-cancel="info-dialog-cancel-btn" data-type="{{confirmType}}" visible="{{showConfirm}}" title="{{title}}"
     content="{{content}}" confirm-btn="确认" cancel-btn="{{showCancel ? cancelBtn : null}}" bind:confirm="onConfirm"
     bind:cancel="onCancel" />
 </view>

@@ -1,4 +1,5 @@
 import request from "../../utils/http";
+import Message from "../../miniprogram_npm/tdesign-miniprogram/message-item/message-item";
 
 Page({
   /**
@@ -32,7 +33,12 @@ Page({
     // 重置active状态
     this.setData({ activeCell: "" });
 
-    await this.getTodayProgress();
+    try {
+      await this.getTodayProgress();
+    } catch (err) {
+      // http.ts 已处理 token 过期跳转，这里只需防止未捕获的 rejection
+      console.warn("[index] getTodayProgress error:", err);
+    }
   },
 
   /**

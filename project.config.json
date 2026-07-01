@@ -13,7 +13,7 @@
     },
     "coverView": false,
     "postcss": false,
-    "minified": false,
+    "minified": true,
     "enhance": true,
     "showShadowRootInWxmlPanel": false,
     "packNpmRelationList": [
@@ -46,10 +46,10 @@
     "tabIndent": "insertSpaces",
     "tabSize": 2
   },
-  "libVersion": "3.7.1",
+  "libVersion": "3.15.2",
   "packOptions": {
     "ignore": [],
     "include": []
   },
-  "appid": "wx15ad88e30e4f9db5"
+  "appid": "wx978ff75cdd9fd7f2"
 }

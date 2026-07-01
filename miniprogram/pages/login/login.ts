@@ -245,10 +245,4 @@ Page({
     });
   },
 
-  // 跳转到注册页面
-  goToRegister() {
-    wx.navigateTo({
-      url: "/pages/webview/webview?url=https://search.aidimsum.com/",
-    });
-  },
 });

@@ -60,8 +60,8 @@ Page({
     cancelBtn: "取消",
     // image
     imageUrl: "",
-    // OSS 音频播放状态
-    ossAudioPlaying: false,
+    // 当前音频播放来源："" 未播放 | "oss" 题目音频 | "record" 录音回放
+    playingSource: "",
     // 答题时间统计
     questionStartTime: 0, // 当前题目开始答题的时间戳（毫秒）
     // AI评分按钮是否可用
@@ -102,6 +102,9 @@ Page({
     const recorderManager = (this as any).recorderManager;
     if (this.data.recording && recorderManager) {
       recorderManager.stop();
+    }
+    if (this.data.playingSource) {
+      wx.getBackgroundAudioManager().stop();
     }
     wx.hideLoading();
     wx.hideToast();
@@ -646,7 +649,7 @@ Page({
       return;
     }
 
-    this.playOSSAudio({ url, title: "录音播放" });
+    this.playOSSAudio({ url, title: "录音播放", source: "record" });
   },
 
   // 播放 OSS 音频
@@ -657,45 +660,21 @@ Page({
       return;
     }
     console.log("准备播放音频:", url);
-    this.playOSSAudio({ url, title: "粤语音频" });
+    this.playOSSAudio({ url, title: "粤语音频", source: "oss" });
   },
 
-  playOSSAudio({ url, title }: { url: string; title: string }) {
-    if (this.data.ossAudioPlaying) return;
-    wx.showLoading({
-      title: "加载音频中...",
-    });
+  // 给全局播放器注册回调，每个页面实例只注册一次
+  ensureBgAudioListeners() {
+    if ((this as any).bgAudioListenersReady) return;
+    (this as any).bgAudioListenersReady = true;
 
-    // 使用 BackgroundAudioManager 播放网络音频
     const backgroundAudioManager = wx.getBackgroundAudioManager();
-
-    // 设置必要属性
-    backgroundAudioManager.title = title;
-    backgroundAudioManager.src = url;
 
     // 播放开始时切换图标
     backgroundAudioManager.onPlay(() => {
       console.log("开始播放");
       wx.hideLoading();
-      this.setData({ ossAudioPlaying: true });
-    });
-
-    // 播放结束时恢复图标
-    backgroundAudioManager.onEnded(() => {
-      console.log("播放结束");
-      this.setData({ ossAudioPlaying: false });
-    });
-
-    // 播放错误时恢复图标
-    backgroundAudioManager.onError((err) => {
-      console.error("音频播放错误:", err);
-      wx.hideLoading();
-      this.setData({ ossAudioPlaying: false });
-      wx.showToast({
-        title: "播放失败",
-        icon: "none",
-        duration: 2000,
-      });
+      this.setData({ playingSource: (this as any).bgAudioSource || "" });
     });
 
     // 自然播放完成
@@ -703,6 +682,57 @@ Page({
       console.log("音频可以播放了");
       wx.hideLoading();
     });
+
+    // 悬浮胶囊/锁屏暂停、来电等打断也要复位状态，否则后续点击会被拦截
+    backgroundAudioManager.onPause(() => {
+      this.setData({ playingSource: "" });
+    });
+
+    backgroundAudioManager.onStop(() => {
+      this.setData({ playingSource: "" });
+    });
+
+    // 播放结束时恢复图标
+    backgroundAudioManager.onEnded(() => {
+      console.log("播放结束");
+      this.setData({ playingSource: "" });
+    });
+
+    // 播放错误时恢复图标
+    backgroundAudioManager.onError((err) => {
+      console.error("音频播放错误:", err);
+      wx.hideLoading();
+      this.setData({ playingSource: "" });
+      wx.showToast({
+        title: "播放失败",
+        icon: "none",
+        duration: 2000,
+      });
+    });
+  },
+
+  playOSSAudio({ url, title, source }: { url: string; title: string; source: "oss" | "record" }) {
+    this.ensureBgAudioListeners();
+    const backgroundAudioManager = wx.getBackgroundAudioManager();
+
+    // 再次点击正在播放的那一个 = 停止；点另一个则切换过去播放
+    if (this.data.playingSource === source) {
+      backgroundAudioManager.stop();
+      this.setData({ playingSource: "" });
+      return;
+    }
+
+    wx.showLoading({
+      title: "加载音频中...",
+    });
+
+    // 记下本次播放来源，onPlay 回调据此更新对应图标
+    (this as any).bgAudioSource = source;
+
+    // 先 stop 再赋值 src，保证重复播放同一 URL 也能重新触发播放
+    backgroundAudioManager.stop();
+    backgroundAudioManager.title = title;
+    backgroundAudioManager.src = url;
   },
 
   onConfirm() {

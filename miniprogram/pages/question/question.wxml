@@ -74,14 +74,14 @@
                 <view class="dialogue-item">{{currentQuestion.meaning}}</view>
                 <view class="dialogue-item">{{currentQuestion.jyutping}}</view>
                 <!-- 点击之后换成sound -->
-                <t-icon name="{{ossAudioPlaying ? 'sound' : 'sound-low'}}" size="48rpx" color="inherit"
+                <t-icon name="{{playingSource === 'oss' ? 'sound' : 'sound-low'}}" size="48rpx" color="inherit"
                   class="sound-right" bind:tap="onPlayOSSAudio" data-url="{{currentQuestion.audio}}" />
               </view>
             </view>
             <view class="audio-controls">
               <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
                 bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
-                <t-icon name="{{url ? (ossAudioPlaying ? 'pause' : 'play') : 'sound'}}" size="48rpx" custom-class="mic-icon"
+                <t-icon name="{{url ? (playingSource === 'record' ? 'pause' : 'play') : 'sound'}}" size="48rpx" custom-class="mic-icon"
                   color="{{recording ? '#fff' : ''}}" />
                 <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
               </view>
@@ -116,7 +116,7 @@
         <view class="audio-controls">
           <view class="record-btn {{recording ? 'recording' : ''}}" bind:touchstart="onStartRecord"
             bind:touchmove="onRecordTouchMove" bind:touchend="onStopRecord" catchtap="onPlayAudio">
-            <t-icon name="{{url ? (ossAudioPlaying ? 'pause' : 'play')  : 'sound'}}" size="48rpx" custom-class="mic-icon"
+            <t-icon name="{{url ? (playingSource === 'record' ? 'pause' : 'play')  : 'sound'}}" size="48rpx" custom-class="mic-icon"
               color="{{recording ? '#fff' : ''}}" />
             <text class="record-text">{{recording ? '松开 结束' : (url ? '点击播放 / 长按录音' : '长按 录音')}}</text>
           </view>

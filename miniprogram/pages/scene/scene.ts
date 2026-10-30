@@ -115,6 +115,7 @@ Page({
    */
   syncTheme() {
     const app = getApp<any>();
+    app.syncNavigationBarTheme();
     const themeMode = app.getThemeMode();
     const currentTheme = app.getTheme();
 

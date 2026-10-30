@@ -1,4 +1,5 @@
 import ENV from "../config/setting";
+import { redirectToLogin } from "./login-redirect";
 
 /**
  * 小程序 request 封装
@@ -8,7 +9,7 @@ import ENV from "../config/setting";
  */
 
 let isRefreshing = false;
-let refreshQueue: Function[] = [];
+let refreshQueue: Array<{ retry: () => void; reject: (error: Error) => void }> = [];
 
 function request(url: string, options: any = {}): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -42,21 +43,7 @@ function request(url: string, options: any = {}): Promise<any> {
           const retryCount = options._retryCount || 0;
           if (retryCount >= 3) {
             console.error("[request] 重试 3 次仍失败");
-            wx.showToast({
-              title: "登录已过期，请重新登录",
-              icon: "none",
-              duration: 2000,
-            });
-
-            // 清空 token 并跳转到登录页
-            wx.removeStorageSync("accessToken");
-            wx.removeStorageSync("refreshToken");
-
-            setTimeout(() => {
-              wx.reLaunch({
-                url: "/pages/login/login",
-              });
-            }, 2000);
+            redirectToLogin();
 
             return reject(new Error("登录过期，请重新登录"));
           }
@@ -89,9 +76,10 @@ function handleTokenExpired(
 ) {
   if (isRefreshing) {
     // ✅ 已在刷新，排队等待
-    return refreshQueue.push(() =>
-      request(url, options).then(resolve).catch(reject),
-    );
+    return refreshQueue.push({
+      retry: () => { request(url, options).then(resolve).catch(reject); },
+      reject,
+    });
   }
 
   isRefreshing = true;
@@ -103,21 +91,8 @@ function handleTokenExpired(
       if (!ok) {
         const queue = refreshQueue.slice();
         refreshQueue = [];
-        queue.forEach((cb) => cb());
-        wx.removeStorageSync("accessToken");
-        wx.removeStorageSync("refreshToken");
-
-        wx.showToast({
-          title: "登录已过期，请重新登录",
-          icon: "none",
-          duration: 2000,
-        });
-
-        setTimeout(() => {
-          wx.reLaunch({
-            url: "/pages/login/login",
-          });
-        }, 2000);
+        queue.forEach((item) => item.reject(new Error("登录过期")));
+        redirectToLogin();
 
         return reject(new Error("登录过期"));
       }
@@ -125,7 +100,7 @@ function handleTokenExpired(
       // ✅ 刷新成功，执行队列
       refreshQueue.forEach((cb) => {
         try {
-          cb();
+          cb.retry();
         } catch (e) {
           console.error(e);
         }
@@ -137,7 +112,10 @@ function handleTokenExpired(
     })
     .catch(() => {
       isRefreshing = false;
+      const queue = refreshQueue;
       refreshQueue = [];
+      queue.forEach((item) => item.reject(new Error("refresh error")));
+      redirectToLogin();
       reject(new Error("refresh error"));
     });
 }

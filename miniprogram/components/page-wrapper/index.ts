@@ -10,6 +10,14 @@ const THEME_OPTIONS = [
   { label: "深色模式", value: "dark" },
 ];
 
+// ActionSheet 支持逐项设置颜色，未选项使用弹框自身的文字颜色。
+function getThemeOptions(mode: string) {
+  return THEME_OPTIONS.map((option) => ({
+    ...option,
+    color: option.value === mode ? "var(--primary)" : "",
+  }));
+}
+
 // 主题模式文本映射
 const THEME_MODE_TEXT: Record<string, string> = {
   auto: "跟随系统",
@@ -31,6 +39,14 @@ Component({
   },
 
   properties: {
+    currentTheme: {
+      type: String,
+      value: "light",
+    },
+    themeMode: {
+      type: String,
+      value: "auto",
+    },
     // 页面图标
     pageIcon: {
       type: String,
@@ -47,11 +63,9 @@ Component({
     currentSwiperIndex: 0,
     titleAnimate: false,
     // 主题相关
-    currentTheme: "light" as "light" | "dark",
-    themeMode: "auto" as "auto" | "light" | "dark",
     themeModeText: "跟随系统",
     showThemeSheet: false,
-    themeOptions: THEME_OPTIONS,
+    themeOptions: getThemeOptions("auto"),
     username: "",
     avatarUrl: "",
     totalTime: "",
@@ -59,6 +73,21 @@ Component({
     accuracy: "",
     level: "正在加载",
     version: miniProgram.version || `${ENV.VERSION}`,
+  },
+
+  observers: {
+    themeMode(mode: string) {
+      this.setData({
+        themeModeText: THEME_MODE_TEXT[mode],
+        themeOptions: getThemeOptions(mode),
+      });
+    },
+  },
+
+  pageLifetimes: {
+    show() {
+      this.syncTheme();
+    },
   },
 
   lifetimes: {
@@ -127,22 +156,13 @@ Component({
     },
 
     // 选择主题
-    onThemeSelect(e: any) {
+    async onThemeSelect(e: any) {
       const { value } = e.detail.selected;
       const app = getApp<any>();
 
-      app.setThemeMode(value);
-
-      // 更新组件状态
-      setTimeout(() => {
-        const currentTheme = app.getTheme();
-        this.setData({
-          themeMode: value,
-          currentTheme,
-          themeModeText: THEME_MODE_TEXT[value],
-          showThemeSheet: false,
-        });
-      }, 100);
+      await app.setThemeMode(value);
+      this.syncTheme();
+      this.setData({ showThemeSheet: false });
     },
 
     // 关闭主题选择弹窗

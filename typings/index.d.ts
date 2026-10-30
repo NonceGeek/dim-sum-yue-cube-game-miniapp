@@ -25,6 +25,7 @@ interface IAppOption {
   setStorage(key: string, data: any): Promise<void>;
   initTheme: () => void;
   applyTheme: (theme: ThemeValue) => void;
+  syncNavigationBarTheme(): void;
   getThemeMode: () => any;
   getTheme: any;
   getSceneMap(): Record<string, SceneTypeInfo>;

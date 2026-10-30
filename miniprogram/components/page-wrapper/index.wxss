@@ -1,3 +1,10 @@
+/* 页面只由内部 scroll-view 滚动，底层始终铺满主题背景。 */
+.container-wrap {
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-page);
+}
+
 /* components/page-wrapper/index.wxss */
 .page-swiper {
   width: 100%;
@@ -9,6 +16,7 @@
 }
 
 .scroll-content {
+  background-color: var(--bg-page);
   height: 100%;
   width: 100%;
   padding-bottom: 140rpx;

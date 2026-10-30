@@ -1,4 +1,4 @@
-<view class="container-wrap {{themeMode === 'auto' ? '' : (currentTheme === 'dark' ? 'theme-dark' : 'theme-light')}}">
+<view class="container-wrap theme-{{currentTheme}}">
   <swiper indicator-dots="{{false}}" autoplay="{{false}}" circular="{{false}}" interval="3000" duration="500"
     class="page-swiper" bindchange="onSwiperChange" current="{{currentSwiperIndex}}">
     <swiper-item class="page-swiper-item">

@@ -18,6 +18,8 @@ interface Question {
 const ERROR_MESSAGE = "，请稍后重试";
 
 Page({
+  resultTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+
   data: {
     scene: "",
     sceneId: "",
@@ -30,10 +32,13 @@ Page({
     selectedBtn: null as string | null,
     progressPercent: 0,
     // 结果弹窗相关状态
+    submittingAnswer: false,
+    resultCanAdvance: true,
     showResultDialog: false,
     isCorrect: false,
     resultMessage: "",
     correctCount: 0,
+    quizFinished: false,
     // 倒计时
     time: 15 * 1000,
     countDownRunning: true,
@@ -93,6 +98,7 @@ Page({
   },
 
   onUnload() {
+    if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
     if (this.data.touchStartTimer) {
       clearTimeout(this.data.touchStartTimer);
     }
@@ -112,6 +118,7 @@ Page({
 
   syncTheme() {
     const app = getApp<any>();
+    app.syncNavigationBarTheme();
     const themeMode = app.getThemeMode();
     const currentTheme = app.getTheme();
 
@@ -150,9 +157,10 @@ Page({
   },
 
   onOptionSelect(e: any) {
+    if (this.data.selectedIndex !== null || this.data.countDownHandled || this.data.quizFinished) return;
     console.log("dddd:", e.currentTarget.dataset.index);
     const index = e.currentTarget.dataset.index;
-    this.setData({ selectedIndex: index }, () => {
+    this.setData({ selectedIndex: index, countDownRunning: false, countDownHandled: true }, () => {
       this.submitAnswer();
     });
   },
@@ -185,35 +193,109 @@ Page({
 
   // 提交答案
   onCloseDialogAndNextQuestion() {
-    // 3秒后自动关闭弹窗
-    setTimeout(() => {
-      this.setData({
-        showResultDialog: false,
-        countDownHandled: false,
-        time: 15 * 1000,
+    if (this.data.scene === "context" && this.data.showResultDialog) {
+      if (this.data.currentIndex + 1 >= this.data.totalCount) {
+        if (this.resultTimer !== undefined) {
+          clearTimeout(this.resultTimer);
+          this.resultTimer = undefined;
+        }
+        this.setData({
+          countDownRunning: false,
+          countDownHandled: true,
+        });
+        this.selectComponent("#context-result-dialog").open({
+          title: "答题结果",
+          content: this.data.resultMessage,
+          showCancel: true,
+          cancelText: "返回",
+          confirmText: "确认",
+          onCancel: () => {
+            this.setData({ showResultDialog: false });
+            wx.navigateBack();
+          },
+          onConfirm: () => {
+            this.showQuizSummary();
+          },
+        });
+        return;
+      }
+      this.selectComponent("#context-result-dialog").open({
+        title: "答题结果",
+        content: this.data.resultMessage,
+        showCancel: true,
+        cancelText: "返回",
+        confirmText: this.data.currentIndex + 1 >= this.data.totalCount ? "确定" : "下一题",
+        onCancel: () => {
+          this.setData({ showResultDialog: false });
+          wx.navigateBack();
+        },
+        onConfirm: () => { this.onResultConfirm(); },
       });
-      // 延迟一点再进入下一题，让用户看到结果
-      setTimeout(() => {
-        this.onResultConfirm();
-      }, 300);
+      return;
+    }
+    if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
+    this.resultTimer = setTimeout(() => {
+      this.resultTimer = undefined;
+      this.onResultConfirm();
     }, 2000);
+  },
+
+  showQuizSummary() {
+    if (this.data.quizFinished) return;
+    if (this.resultTimer !== undefined) {
+      clearTimeout(this.resultTimer);
+      this.resultTimer = undefined;
+    }
+    this.selectComponent("#context-result-dialog").close();
+    this.setData({
+      showResultDialog: false,
+      quizFinished: true,
+      countDownRunning: false,
+      countDownHandled: true,
+    });
+    this.selectComponent("#quiz-summary-dialog").open({
+      title: "答题完成",
+      content: `你答对了 ${this.data.correctCount} / ${this.data.totalCount} 题`,
+      showCancel: true,
+      cancelText: "返回",
+      confirmText: "确认",
+      onCancel: () => { wx.navigateBack(); },
+      onConfirm: () => { wx.navigateBack(); },
+    });
   },
 
   // 提交答案到服务器
   async submitAnswer() {
     const { scene } = this.data;
+    if (this.data.submittingAnswer || this.data.showResultDialog || this.data.quizFinished) return;
+    this.setData({ submittingAnswer: true });
     try {
       if (scene === "context") await this.doContextSceneSubmit();
-      if (scene === "sound") await this.doSoundSceneSubmit();
+      if (scene === "sound") {
+        await this.doSoundSceneSubmit();
+        this.openSoundResultDialog();
+      }
       if (scene === "image") await this.doImageSceneSubmit();
 
-      if (["context", "sound"].includes(scene)) {
+      if (scene === "context") {
         this.onCloseDialogAndNextQuestion();
       }
     } catch (error) {
       console.error("提交答案失败:", error);
-      // 即使提交失败，也显示结果
-      this.onCloseDialogAndNextQuestion();
+      if (scene === "sound") {
+        this.setData({
+          showResultDialog: true,
+          isCorrect: false,
+          resultCanAdvance: false,
+          resultMessage: "评分失败，请稍后重试。录音已保留。",
+        });
+        this.openSoundResultDialog();
+      } else {
+        this.onCloseDialogAndNextQuestion();
+      }
+    } finally {
+      this.setData({ submittingAnswer: false });
+      if (scene === "sound") wx.hideLoading();
     }
   },
   async doContextSceneSubmit() {
@@ -246,6 +328,23 @@ Page({
       });
     }
   },
+  openSoundResultDialog() {
+    const dialog = this.selectComponent("#sound-result-dialog");
+    dialog.open({
+      title: this.data.resultCanAdvance ? "发音评分" : "评分暂未完成",
+      content: this.data.resultMessage,
+      showCancel: true,
+      cancelText: "关闭",
+      confirmText: this.data.currentIndex + 1 >= this.data.totalCount ? "确定" : "下一题",
+      onCancel: () => {
+        this.setData({ showResultDialog: false });
+      },
+      onConfirm: () => {
+        this.onResultConfirm();
+      },
+    });
+  },
+
   async doSoundSceneSubmit() {
     const { currentQuestion, scene, url, questionStartTime } = this.data;
     const id = currentQuestion.id;
@@ -265,22 +364,19 @@ Page({
     const dialogInfo = {
       showResultDialog: true,
       isCorrect: false,
+      resultCanAdvance: !submitAnswer.error,
       resultMessage: "",
     };
     if (submitAnswer.error) {
       dialogInfo.resultMessage = submitAnswer.error + ERROR_MESSAGE;
     } else if (!submitAnswer.is_correct) {
-      dialogInfo.resultMessage = submitAnswer.comment + ERROR_MESSAGE;
+      dialogInfo.resultMessage = submitAnswer.comment || "再试着听清发音，多练习一下吧。";
     } else {
       dialogInfo.isCorrect = true;
-      dialogInfo.resultMessage = submitAnswer.comment;
+      dialogInfo.resultMessage = submitAnswer.comment || "恭喜，答对了！";
     }
     this.setData(dialogInfo);
-    setTimeout(() => {
-      this.setData({
-        showResultDialog: false,
-      });
-    }, 2000);
+
   },
   async doImageSceneSubmit() {
     const { category, imageUrl, url, questionStartTime } = this.data;
@@ -298,73 +394,63 @@ Page({
         },
       });
 
-      wx.hideLoading();
-      console.log("picvoiceReview:", picvoiceReview);
-
-      if (!picvoiceReview.overallPass || picvoiceReview.error) {
-        this.setData({
-          showResultDialog: true,
-          isCorrect: false,
-          resultMessage:
-            picvoiceReview.comment || picvoiceReview.error + ERROR_MESSAGE,
-        });
-        // 2秒后自动关闭弹窗
-        setTimeout(() => {
-          this.setData({
-            showResultDialog: false,
-          });
-        }, 2000);
-      } else {
-        console.log("picvoiceReview:", picvoiceReview);
-        this.setData({
-          showResultDialog: true,
-          isCorrect: true,
-          resultMessage: picvoiceReview.comment,
-        });
-        // 2秒后自动关闭弹窗并返回上一页
-        setTimeout(() => {
-          this.setData({
-            showResultDialog: false,
-          });
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 300);
-        }, 2000);
-      }
-    } catch (error) {
-      wx.hideLoading();
+      this.setData({
+        showResultDialog: true,
+        isCorrect: Boolean(picvoiceReview.overallPass && !picvoiceReview.error),
+        resultMessage: picvoiceReview.comment ||
+          (picvoiceReview.error ? picvoiceReview.error + ERROR_MESSAGE : "评分完成"),
+      });
+    } catch (error: any) {
       console.error("图片识音评分失败:", error);
       this.setData({
         showResultDialog: true,
         isCorrect: false,
-        resultMessage: error.errMsg + ERROR_MESSAGE,
+        resultMessage: (error?.errMsg || error?.message || "评分失败") + ERROR_MESSAGE,
       });
-      setTimeout(() => {
-        this.setData({
-          showResultDialog: false,
-        });
-      }, 2000);
+    } finally {
+      wx.hideLoading();
     }
+    this.selectComponent("#image-result-dialog").open({
+      title: "答题结果",
+      content: this.data.resultMessage,
+      showCancel: true,
+      cancelText: "关闭",
+      confirmText: "确认",
+      onCancel: () => {
+        this.setData({ showResultDialog: false });
+      },
+      onConfirm: () => {
+        this.setData({ showResultDialog: false });
+        wx.navigateBack();
+      },
+    });
   },
 
   onResultConfirm() {
-    const { currentIndex, totalCount, questions, scene } = this.data;
+    if (this.resultTimer !== undefined) {
+      clearTimeout(this.resultTimer);
+      this.resultTimer = undefined;
+    }
+    if (this.data.quizFinished) return;
+    if (this.data.scene === "context") {
+      this.selectComponent("#context-result-dialog").close();
+    }
+    const { currentIndex, totalCount, questions } = this.data;
     const nextIndex = currentIndex + 1;
 
     if (nextIndex >= totalCount) {
-      if (scene === "context") {
-        // 答题结束，停止倒计时
-        this.setData({
-          showConfirm: true,
-          title: "答题完成",
-          content: `你答对了 ${this.data.correctCount} / ${totalCount} 题`,
-          showCancel: false,
-          time: 0,
-        });
+      if (this.data.scene === "context") {
+        this.showQuizSummary();
         return;
-      } else {
-        wx.navigateBack();
       }
+      this.setData({
+        showResultDialog: false,
+        quizFinished: true,
+        countDownRunning: false,
+        countDownHandled: true,
+      });
+      wx.navigateBack();
+      return;
     }
 
     // 先设置题目数据，不启动倒计时
@@ -409,7 +495,7 @@ Page({
 
   onCountDownFinish() {
     const { countDownHandled } = this.data;
-    if (countDownHandled) return;
+    if (countDownHandled || this.data.quizFinished || this.data.showConfirm) return;
     this.setData(
       {
         countDownHandled: true,
@@ -420,20 +506,7 @@ Page({
         countDownUrgent: false,
       },
       () => {
-        // 3秒后自动关闭弹窗
-        setTimeout(() => {
-          this.setData({
-            showResultDialog: false,
-            time:
-              this.data.totalCount !== this.data.currentIndex + 1
-                ? 15 * 1000
-                : 0,
-          });
-          // 延迟一点再进入下一题，让用户看到结果
-          setTimeout(() => {
-            this.onResultConfirm();
-          }, 300);
-        }, 2000);
+        this.onCloseDialogAndNextQuestion();
       },
     );
   },

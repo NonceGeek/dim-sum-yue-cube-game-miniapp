@@ -1,10 +1,12 @@
 import { IAppOption } from "../../../typings";
 import ENV from "../../config/setting";
+import { getLoginReturnUrl } from "../../utils/login-redirect";
 const { miniProgram } = wx.getAccountInfoSync();
 
 Page({
   data: {
     loading: false,
+    returnUrl: "/pages/index/index",
     currentTheme: "light",
     showPhonePopup: false,
     phone: "",
@@ -17,7 +19,8 @@ Page({
     version: miniProgram.version || `${ENV.VERSION}`,
   },
 
-  onLoad() {
+  onLoad(options: Record<string, string | undefined>) {
+    this.setData({ returnUrl: getLoginReturnUrl(options.returnUrl) });
     this.syncTheme();
   },
 
@@ -27,6 +30,7 @@ Page({
 
   syncTheme() {
     const app = getApp<any>();
+    app.syncNavigationBarTheme();
     const currentTheme = app.getTheme() || "light";
     this.setData({ currentTheme });
   },
@@ -56,10 +60,10 @@ Page({
         icon: "success",
       });
 
-      // Redirect to main page
+      // 返回触发登录的页面
       setTimeout(() => {
         wx.reLaunch({
-          url: "/pages/index/index",
+          url: this.data.returnUrl,
         });
       }, 1500);
     } catch (err: any) {
@@ -201,10 +205,10 @@ Page({
         showPhonePopup: false,
       });
 
-      // 跳转到主页
+      // 返回触发登录的页面
       setTimeout(() => {
         wx.reLaunch({
-          url: "/pages/index/index",
+          url: this.data.returnUrl,
         });
       }, 1500);
     } catch (err: any) {

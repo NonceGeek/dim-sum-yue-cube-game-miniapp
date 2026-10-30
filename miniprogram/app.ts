@@ -95,23 +95,35 @@ App<IAppOption>({
       if (typeof page.onThemeChange === "function") {
         page.onThemeChange({ theme });
       } else if (page.setData) {
-        page.setData({ currentTheme: theme });
+        page.setData({ currentTheme: theme, themeMode: this.getThemeMode() });
       }
     });
 
-    // 设置导航栏样式
+    this.syncNavigationBarTheme();
+
+    console.log("主题已应用:", theme);
+  },
+
+  // 每次页面显示时重新应用，避免新页面恢复为系统主题的导航栏颜色。
+  syncNavigationBarTheme() {
+    const theme = this.getTheme();
     const navBarStyle =
       theme === "dark"
         ? { backgroundColor: "#161B22", frontColor: "#ffffff" }
         : { backgroundColor: "#FFFFFF", frontColor: "#000000" };
+
+    const backgroundColor = theme === "dark" ? "#0D1117" : "#F5F7FA";
+    wx.setBackgroundColor({
+      backgroundColor,
+      backgroundColorTop: backgroundColor,
+      backgroundColorBottom: backgroundColor,
+    });
 
     wx.setNavigationBarColor({
       frontColor: navBarStyle.frontColor as "#ffffff" | "#000000",
       backgroundColor: navBarStyle.backgroundColor,
       animation: { duration: 300, timingFunc: "easeInOut" },
     });
-
-    console.log("主题已应用:", theme);
   },
 
   /**

@@ -724,3 +724,13 @@ t-action-sheet,
 t-action-sheet .t-popup {
   z-index: 100 !important;
 }
+
+/* ActionSheet 统一继承系统或手动主题，背景沿用 --td-bg-color-container。 */
+page,
+.theme-light,
+.theme-dark {
+  --td-action-sheet-color: var(--text-primary);
+  --td-action-sheet-cancel-color: var(--text-primary);
+  --td-action-sheet-gap-color: var(--bg-page);
+  --td-action-sheet-border-color: transparent;
+}

@@ -97,7 +97,7 @@
 
 .login-btn {
   width: 100% !important;
-  height: 100rpx !important;
+  height: 96rpx !important;
   background: var(--gradient-primary) !important;
   border: none !important;
   border-radius: var(--radius-full) !important;
@@ -188,8 +188,37 @@
   line-height: 1.5;
 }
 
+.agreement-copy {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  font-size: 20rpx;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
 .agreement-checkbox {
-  margin-right: 8rpx;
+  flex-shrink: 0;
+  margin-top: 0;
+  margin-right: 12rpx;
+  display: flex;
+  align-items: center;
+  height: 48rpx;
+  --td-checkbox-icon-size: 48rpx;
+  --td-checkbox-title-line-height: 48rpx;
+  --td-checkbox-vertical-padding: 0;
+  --td-checkbox-horizontal-padding: 0;
+  --td-checkbox-bg-color: transparent;
+}
+
+.agreement-checkbox-control {
+  display: flex !important;
+  align-items: center;
+  height: 48rpx;
+}
+
+.agreement-checkbox-icon {
+  margin: 0 !important;
 }
 
 .agreement-text {
@@ -211,4 +240,9 @@
 
 .custom-count-down {
   color: var(--text-primary) !important;
+}
+
+/* 两个登录入口之间保留间距。 */
+.login-box > .login-btn + .login-btn {
+  margin-top: 24rpx;
 }

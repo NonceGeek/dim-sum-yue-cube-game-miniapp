@@ -208,7 +208,7 @@ Page({
           content: this.data.resultMessage,
           showCancel: true,
           cancelText: "返回",
-          confirmText: "确认",
+          confirmText: "查看结果",
           onCancel: () => {
             this.setData({ showResultDialog: false });
             wx.navigateBack();

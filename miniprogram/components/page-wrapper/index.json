@@ -9,6 +9,7 @@
     "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "t-button": "tdesign-miniprogram/button/button",
     "t-progress": "tdesign-miniprogram/progress/progress",
-    "t-image": "tdesign-miniprogram/image/image"
+    "t-image": "tdesign-miniprogram/image/image",
+    "common-dialog": "/components/common-dialog/common-dialog"
   }
 }

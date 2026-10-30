@@ -174,14 +174,13 @@ Component({
 
     // 退出登录
     onLogout() {
-      wx.showModal({
+      this.selectComponent("#logout-dialog").open({
         title: "提示",
         content: "确定要退出登录吗？",
-        success: (res) => {
-          if (res.confirm) {
-            getApp<any>().logout();
-          }
-        },
+        showCancel: true,
+        cancelText: "取消",
+        confirmText: "确定",
+        onConfirm: () => { getApp<any>().logout(); },
       });
     },
 

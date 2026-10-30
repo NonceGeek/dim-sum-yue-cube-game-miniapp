@@ -61,12 +61,12 @@
             </view>
           </view>
         </view>
+        <view class="version-hint">Version: {{version}}</view>
         <view class="logout-section">
-          <t-button theme="danger" variant="light" size="large" block bind:tap="onLogout" class="logout-btn">
+          <t-button theme="danger" variant="light" shape="round" size="large" block bind:tap="onLogout" class="logout-btn">
             退出登录
           </t-button>
         </view>
-        <view class="version-hint">Version: {{version}}</view>
       </scroll-view>
     </swiper-item>
   </swiper>
@@ -76,4 +76,5 @@
 
   <t-action-sheet visible="{{showThemeSheet}}" items="{{themeOptions}}" bind:selected="onThemeSelect"
     bind:cancel="onThemeSheetClose" bind:close="onThemeSheetClose" />
+  <common-dialog id="logout-dialog" />
 </view>

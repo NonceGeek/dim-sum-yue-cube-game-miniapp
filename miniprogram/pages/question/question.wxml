@@ -90,10 +90,10 @@
 
             <view class="btn-group">
               <t-button size="large" shape="round"
-                class="cancel-btn" t-class="cancel-btn" bind:tap="onBtnSelect"
+                class="action-button-slot" t-class="cancel-btn" bind:tap="onBtnSelect"
                 data-btn="cancel">取消</t-button>
               <t-button size="large" shape="round" disabled="{{!canSubmitAI}}"
-                class="ai-button" t-class="ai-button" bind:tap="onBtnSelect"
+                class="action-button-slot" t-class="ai-button" bind:tap="onBtnSelect"
                 data-btn="ai">AI评分</t-button>
             </view>
           </view>
@@ -126,9 +126,9 @@
 
         <view class="btn-group">
           <t-button size="large" shape="round"
-            class="cancel-btn" t-class="cancel-btn" bind:tap="onBtnSelect"
+            class="action-button-slot" t-class="cancel-btn" bind:tap="onBtnSelect"
             data-btn="cancel">取消</t-button>
-          <t-button size="large" shape="round" disabled="{{!canSubmitAI}}" class="ai-button" t-class="ai-button"
+          <t-button size="large" shape="round" disabled="{{!canSubmitAI}}" class="action-button-slot" t-class="ai-button"
             bind:tap="onBtnSelect" data-btn="ai">AI评分</t-button>
         </view>
 

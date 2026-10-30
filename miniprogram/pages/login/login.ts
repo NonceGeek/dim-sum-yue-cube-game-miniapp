@@ -2,6 +2,7 @@ import { IAppOption } from "../../../typings";
 import ENV from "../../config/setting";
 import { getLoginReturnUrl } from "../../utils/login-redirect";
 const { miniProgram } = wx.getAccountInfoSync();
+const SMS_COOLDOWN_KEY = "smsCooldownUntil";
 
 Page({
   data: {
@@ -12,6 +13,7 @@ Page({
     phone: "",
     code: "",
     counting: false,
+    cooldownTime: 0,
     codeButtonText: "发送验证码",
     sendingCode: false,
     logining: false,
@@ -25,6 +27,7 @@ Page({
   },
 
   onShow() {
+    this.restoreSmsCooldown();
     this.syncTheme();
   },
 
@@ -79,7 +82,7 @@ Page({
 
   // 打开手机号登录弹窗
   handlePhoneLogin() {
-    this.setData({
+    this.restoreSmsCooldown();    this.setData({
       showPhonePopup: true,
       agreedToTerms: false,
     });
@@ -110,9 +113,11 @@ Page({
   // 发送验证码
   async sendCode() {
     const app = getApp<IAppOption>();
-    const { phone, counting } = this.data;
+    const { phone, sendingCode } = this.data;
 
-    if (counting) return;
+    if (sendingCode) return;
+    this.restoreSmsCooldown();
+    if (this.data.counting) return;
 
     // 验证手机号
     if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
@@ -128,19 +133,24 @@ Page({
     try {
       console.log("发送验证码到:", phone);
       const res = await app.doSendSms(phone);
-      if (res.success) {
-        wx.showToast({
-          title: "验证码已发送",
-          icon: "success",
-          duration: 2000,
-        });
-
-        // 开始倒计时
-        this.setData({
-          counting: true,
-          sendingCode: false,
-        });
+      if (!res?.success) {
+        throw new Error(
+          (typeof res?.error === "string" && res.error) || res?.message || "发送失败，请稍后重试",
+        );
       }
+      const deadline = Date.now() + 60000;
+      wx.setStorageSync(SMS_COOLDOWN_KEY, deadline);
+      wx.showToast({
+        title: "验证码已发送",
+        icon: "success",
+        duration: 2000,
+      });
+
+      // 开始倒计时
+      this.setData({
+        counting: true,
+        cooldownTime: Math.max(0, deadline - Date.now()),
+      });
     } catch (err: any) {
       console.error("发送验证码失败", err);
       wx.showToast({
@@ -152,15 +162,23 @@ Page({
         icon: "none",
         duration: 2000,
       });
+    } finally {
       this.setData({ sendingCode: false });
     }
   },
 
+  restoreSmsCooldown() {
+    const storedDeadline = wx.getStorageSync(SMS_COOLDOWN_KEY);
+    const deadline = typeof storedDeadline === "number" && Number.isFinite(storedDeadline) ? storedDeadline : 0;
+    const remaining = Math.max(0, deadline - Date.now());
+    if (!remaining) wx.removeStorageSync(SMS_COOLDOWN_KEY);
+    this.setData({ counting: remaining > 0, cooldownTime: remaining });
+  },
+
   // 倒计时结束
   onCountDownFinish() {
-    this.setData({
-      counting: false,
-    });
+    // 以截止时间为准，避免旧组件的 finish 事件清除新的冷却状态。
+    this.restoreSmsCooldown();
   },
 
   // 确认手机号登录
@@ -228,8 +246,7 @@ Page({
 
   // 协议复选框变化
   onAgreementChange(e: any) {
-    console.log("e:", e);
-    const checked = e.detail.value.length > 0;
+    const checked = e.detail.checked;
     this.setData({
       agreedToTerms: checked,
     });

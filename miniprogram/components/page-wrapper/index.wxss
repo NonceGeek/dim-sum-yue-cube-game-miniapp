@@ -291,6 +291,7 @@
 }
 
 .version-hint {
+  margin-top: 32rpx;
   display: flex;
   justify-content: center;
   color: var(--text-primary);

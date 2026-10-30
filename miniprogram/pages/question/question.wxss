@@ -229,7 +229,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
   padding: 0 20rpx;
-  min-height: 90rpx;
+  min-height: 96rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -284,14 +284,24 @@
 
 .btn-group {
   display: flex;
-  justify-content: center;
   gap: 24rpx;
+  padding: 0 32rpx;
+  box-sizing: border-box;
+}
+
+.action-button-slot {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 /* 与 common-dialog 的取消按钮保持一致。 */
 .cancel-btn {
-  flex: 1;
-  max-width: 200rpx;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   background-color: var(--bg-input) !important;
   border: 1px solid var(--border-color, var(--border-light)) !important;
   color: var(--text-secondary) !important;
@@ -309,8 +319,11 @@
 
 /* 与 common-dialog 的确定按钮保持一致。 */
 .ai-button {
-  flex: 1;
-  max-width: 200rpx;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
   background: var(--gradient-primary) !important;
   border: none !important;
   color: #fff !important;

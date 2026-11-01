@@ -34,6 +34,8 @@ Page({
    */
   data: {
     sceneType: "",
+    refreshing: false,
+    loadingScenes: false,
     pageIcon: "home",
     pageText: "",
     activeCell: "",
@@ -72,11 +74,20 @@ Page({
   /**
    * 初始化场景列表
    */
-  async initSceneList() {
-    wx.showLoading({
-      title: "加载中...",
-      mask: true,
-    });
+  async onSceneRefresh() {
+    if (this.data.refreshing) return;
+    this.setData({ refreshing: true });
+    try {
+      await this.initSceneList(false);
+    } finally {
+      this.setData({ refreshing: false });
+    }
+  },
+
+  async initSceneList(showLoading = true) {
+    if (this.data.loadingScenes) return;
+    this.setData({ loadingScenes: true });
+    if (showLoading) wx.showLoading({ title: "加载中...", mask: true });
     try {
       const sceneType = this.data.sceneType;
       const res = await request(`/question_scenes?mode=${sceneType}`);
@@ -88,16 +99,17 @@ Page({
           ...(scene.total ? { description: `共有${scene.total}句常用语` } : {}),
         };
       });
-      wx.hideLoading();
       this.setData({ sceneList });
-    } catch (e) {
+    } catch (e: any) {
       console.log("获取scene列表失败", e);
-      wx.hideLoading();
       wx.showToast({
-        title: e.error || "获取scene列表失败",
+        title: e?.error || "获取场景失败，请下拉刷新重试",
         icon: "none",
         duration: 2000,
       });
+    } finally {
+      this.setData({ loadingScenes: false });
+      if (showLoading) wx.hideLoading();
     }
   },
 

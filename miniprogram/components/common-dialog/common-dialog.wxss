@@ -123,3 +123,13 @@
   color: var(--text-secondary) !important;
 }
 .theme-dark .common-dialog-cancel.common-dialog-cancel::after { border: none !important; }
+
+.common-dialog-confirm,
+.common-dialog-cancel {
+  transition: none !important;
+  transform: none !important;
+}
+.common-dialog-confirm::after,
+.common-dialog-cancel::after {
+  display: none !important;
+}

@@ -20,6 +20,9 @@ const ERROR_MESSAGE = "，请稍后重试";
 Page({
   resultTimer: undefined as ReturnType<typeof setTimeout> | undefined,
 
+  audioLoadTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+  audioPageDisposed: false,
+
   data: {
     scene: "",
     sceneId: "",
@@ -94,10 +97,18 @@ Page({
   },
 
   onShow() {
+    this.audioPageDisposed = false;
     this.syncTheme();
   },
 
+  onHide() {
+    this.stopQuestionAudio();
+    this.audioPageDisposed = true;
+  },
+
   onUnload() {
+    this.stopQuestionAudio();
+    this.audioPageDisposed = true;
     if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
     if (this.data.touchStartTimer) {
       clearTimeout(this.data.touchStartTimer);
@@ -108,9 +119,6 @@ Page({
     const recorderManager = (this as any).recorderManager;
     if (this.data.recording && recorderManager) {
       recorderManager.stop();
-    }
-    if (this.data.playingSource) {
-      wx.getBackgroundAudioManager().stop();
     }
     wx.hideLoading();
     wx.hideToast();
@@ -150,6 +158,8 @@ Page({
           this.setData({
             countDownRunning: true,
             questionStartTime: Date.now(),
+          }, () => {
+            this.selectComponent("#question-countdown")?.start();
           });
         }, 100);
       },
@@ -158,6 +168,7 @@ Page({
 
   onOptionSelect(e: any) {
     if (this.data.selectedIndex !== null || this.data.countDownHandled || this.data.quizFinished) return;
+    this.selectComponent("#question-countdown")?.pause();
     console.log("dddd:", e.currentTarget.dataset.index);
     const index = e.currentTarget.dataset.index;
     this.setData({ selectedIndex: index, countDownRunning: false, countDownHandled: true }, () => {
@@ -176,11 +187,20 @@ Page({
   async onShowConfirm() {
     const { selectedBtn } = this.data;
     if (selectedBtn === "cancel") {
-      this.setData({
-        showConfirm: true,
+      this.setData({ showConfirm: true });
+      this.selectComponent("#return-confirm-dialog").open({
         title: "确认返回",
-        content: `是否要返回上一级？`,
+        content: "是否要返回上一级？",
         showCancel: true,
+        cancelText: "取消",
+        confirmText: "确认",
+        onCancel: () => {
+          this.setData({ showConfirm: false, selectedBtn: null });
+        },
+        onConfirm: () => {
+          this.setData({ showConfirm: false, selectedBtn: null });
+          wx.navigateBack();
+        },
       });
     } else {
       //点击了ai评分
@@ -269,6 +289,7 @@ Page({
     const { scene } = this.data;
     if (this.data.submittingAnswer || this.data.showResultDialog || this.data.quizFinished) return;
     this.setData({ submittingAnswer: true });
+    if (scene === "context") wx.showLoading({ title: "提交中...", mask: true });
     try {
       if (scene === "context") await this.doContextSceneSubmit();
       if (scene === "sound") {
@@ -290,20 +311,42 @@ Page({
           resultMessage: "评分失败，请稍后重试。录音已保留。",
         });
         this.openSoundResultDialog();
+      } else if (scene === "context") {
+        this.setData({ showResultDialog: true });
+        this.selectComponent("#context-result-dialog").open({
+          title: "提交失败",
+          content: "答案未能确认，请稍后重新选择提交。",
+          showCancel: true,
+          cancelText: "返回",
+          confirmText: "重新作答",
+          onCancel: () => {
+            this.setData({ showResultDialog: false });
+            wx.navigateBack();
+          },
+          onConfirm: () => {
+            this.setData({
+              showResultDialog: false,
+              selectedIndex: null,
+              countDownHandled: false,
+              countDownRunning: true,
+            }, () => {
+              this.selectComponent("#question-countdown")?.start();
+            });
+          },
+        });
       } else {
         this.onCloseDialogAndNextQuestion();
       }
     } finally {
       this.setData({ submittingAnswer: false });
-      if (scene === "sound") wx.hideLoading();
+      if (scene === "sound" || scene === "context") wx.hideLoading();
     }
   },
   async doContextSceneSubmit() {
     const { currentQuestion, selectedIndex, questionStartTime, correctCount } =
       this.data;
     if (selectedIndex === null || !currentQuestion.id) {
-      console.log("selectedIndex is null or no question id, returning");
-      return;
+      throw new Error("缺少题目或所选答案");
     }
     const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
     const params = {
@@ -317,8 +360,18 @@ Page({
       method: "POST",
       data: params,
     });
-    if (submitAnswer.success) {
-      const isCorrect = selectedIndex === currentQuestion.answerIndex;
+    if (!submitAnswer || submitAnswer.error || submitAnswer.success === false) {
+      throw new Error("提交答案失败");
+    }
+    const hasServerResult = typeof submitAnswer.is_correct === "boolean";
+    const hasLocalAnswer = typeof currentQuestion.answerIndex === "number";
+    if (!hasServerResult && !(submitAnswer.success === true && hasLocalAnswer)) {
+      throw new Error("提交结果缺少判题信息");
+    }
+    {
+      const isCorrect = hasServerResult
+        ? submitAnswer.is_correct
+        : selectedIndex === currentQuestion.answerIndex;
       const newCorrectCount = isCorrect ? correctCount + 1 : correctCount;
       this.setData({
         showResultDialog: true,
@@ -453,6 +506,12 @@ Page({
       return;
     }
 
+    this.clearAudioLoading();
+    if (this.data.playingSource || (this as any).bgAudioLoading) {
+      wx.getBackgroundAudioManager().stop();
+    }
+    (this as any).bgAudioLoading = false;
+
     // 先设置题目数据，不启动倒计时
     this.setData(
       {
@@ -468,6 +527,7 @@ Page({
         url: "",
         imageUrl: "",
         canSubmitAI: false,
+        playingSource: "",
       },
       () => {
         // 题目切换完成后，再启动倒计时和开始计时
@@ -475,6 +535,8 @@ Page({
           this.setData({
             countDownRunning: true,
             questionStartTime: Date.now(),
+          }, () => {
+            this.selectComponent("#question-countdown")?.start();
           });
         }, 100);
       },
@@ -495,7 +557,7 @@ Page({
 
   onCountDownFinish() {
     const { countDownHandled } = this.data;
-    if (countDownHandled || this.data.quizFinished || this.data.showConfirm) return;
+    if (countDownHandled || !this.data.countDownRunning || this.data.submittingAnswer || this.data.quizFinished || this.data.showConfirm) return;
     this.setData(
       {
         countDownHandled: true,
@@ -736,6 +798,40 @@ Page({
     this.playOSSAudio({ url, title: "粤语音频", source: "oss" });
   },
 
+  stopQuestionAudio() {
+    const ownsPlayback = this.data.playingSource || (this as any).bgAudioLoading;
+    this.clearAudioLoading();
+    if (ownsPlayback) {
+      wx.getBackgroundAudioManager().stop();
+      wx.hideLoading();
+    }
+    (this as any).bgAudioLoading = false;
+    this.setData({ playingSource: "" });
+  },
+
+  clearAudioLoading() {
+    if (this.audioLoadTimer !== undefined) clearTimeout(this.audioLoadTimer);
+    this.audioLoadTimer = undefined;
+  },
+
+  watchAudioLoading() {
+    this.clearAudioLoading();
+    this.audioLoadTimer = setTimeout(() => {
+      this.audioLoadTimer = undefined;
+      if (this.audioPageDisposed) return;
+      console.error("[question-audio] 加载超时", {
+        questionId: this.data.currentQuestion.id,
+        questionNumber: this.data.currentIndex + 1,
+        source: (this as any).bgAudioSource,
+      });
+      wx.getBackgroundAudioManager().stop();
+      (this as any).bgAudioLoading = false;
+      this.setData({ playingSource: "" });
+      wx.hideLoading();
+      wx.showToast({ title: "音频加载超时，请点击重试", icon: "none" });
+    }, 12000);
+  },
+
   // 给全局播放器注册回调，每个页面实例只注册一次
   ensureBgAudioListeners() {
     if ((this as any).bgAudioListenersReady) return;
@@ -745,35 +841,74 @@ Page({
 
     // 播放开始时切换图标
     backgroundAudioManager.onPlay(() => {
+      if (this.audioPageDisposed) return;
+      this.clearAudioLoading();
+      (this as any).bgAudioLoading = false;
       console.log("开始播放");
       wx.hideLoading();
       this.setData({ playingSource: (this as any).bgAudioSource || "" });
     });
 
+    backgroundAudioManager.onWaiting(() => {
+      if (this.audioPageDisposed || !(this.data.playingSource || (this as any).bgAudioLoading)) return;
+      (this as any).bgAudioLoading = true;
+      // 连续 waiting 事件不延长截止时间。
+      if (this.audioLoadTimer === undefined) this.watchAudioLoading();
+    });
+    backgroundAudioManager.onTimeUpdate(() => {
+      if (this.audioPageDisposed) return;
+      const currentTime = backgroundAudioManager.currentTime;
+      if (currentTime > ((this as any).bgAudioLastTime || 0)) {
+        this.clearAudioLoading();
+        (this as any).bgAudioLoading = false;
+        wx.hideLoading();
+      }
+      (this as any).bgAudioLastTime = currentTime;
+    });
+
     // 自然播放完成
     backgroundAudioManager.onCanplay(() => {
+      if (this.audioPageDisposed) return;
       console.log("音频可以播放了");
       wx.hideLoading();
     });
 
     // 悬浮胶囊/锁屏暂停、来电等打断也要复位状态，否则后续点击会被拦截
     backgroundAudioManager.onPause(() => {
+      if (this.audioPageDisposed) return;
+      this.clearAudioLoading();
+      wx.hideLoading();
+      (this as any).bgAudioLoading = false;
       this.setData({ playingSource: "" });
     });
 
     backgroundAudioManager.onStop(() => {
+      if (this.audioPageDisposed) return;
+      this.clearAudioLoading();
+      wx.hideLoading();
+      (this as any).bgAudioLoading = false;
       this.setData({ playingSource: "" });
     });
 
     // 播放结束时恢复图标
     backgroundAudioManager.onEnded(() => {
+      if (this.audioPageDisposed) return;
+      this.clearAudioLoading();
+      wx.hideLoading();
+      (this as any).bgAudioLoading = false;
       console.log("播放结束");
       this.setData({ playingSource: "" });
     });
 
     // 播放错误时恢复图标
     backgroundAudioManager.onError((err) => {
+      if (this.audioPageDisposed) return;
+      this.clearAudioLoading();
+      wx.hideLoading();
+      (this as any).bgAudioLoading = false;
+      console.error("[question-audio] 播放失败", { questionId: this.data.currentQuestion.id, questionNumber: this.data.currentIndex + 1, err });
       console.error("音频播放错误:", err);
+      backgroundAudioManager.stop();
       wx.hideLoading();
       this.setData({ playingSource: "" });
       wx.showToast({
@@ -789,7 +924,7 @@ Page({
     const backgroundAudioManager = wx.getBackgroundAudioManager();
 
     // 再次点击正在播放的那一个 = 停止；点另一个则切换过去播放
-    if (this.data.playingSource === source) {
+    if (this.data.playingSource === source && backgroundAudioManager.src === url) {
       backgroundAudioManager.stop();
       this.setData({ playingSource: "" });
       return;
@@ -805,7 +940,23 @@ Page({
     // 先 stop 再赋值 src，保证重复播放同一 URL 也能重新触发播放
     backgroundAudioManager.stop();
     backgroundAudioManager.title = title;
-    backgroundAudioManager.src = url;
+    (this as any).bgAudioLastTime = 0;
+    (this as any).bgAudioLoading = true;
+    console.log("[question-audio] 开始加载", {
+      questionId: this.data.currentQuestion.id,
+      questionNumber: this.data.currentIndex + 1,
+      source,
+    });
+    this.watchAudioLoading();
+    try {
+      backgroundAudioManager.src = url;
+    } catch (err) {
+      this.clearAudioLoading();
+      (this as any).bgAudioLoading = false;
+      wx.hideLoading();
+      wx.showToast({ title: "音频播放失败，请重试", icon: "none" });
+      console.error("[question-audio] 设置音频失败", err);
+    }
   },
 
   onConfirm() {

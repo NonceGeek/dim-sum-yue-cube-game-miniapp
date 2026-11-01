@@ -1,6 +1,6 @@
 <page-meta page-style="background-color: {{currentTheme === 'dark' ? '#0D1117' : '#F5F7FA'}}; overflow: hidden;" />
 <view class="container-wrap theme-{{currentTheme}}">
-  <page-wrapper currentTheme="{{currentTheme}}" themeMode="{{themeMode}}" pageIcon="{{pageIcon}}" pageText="{{pageText}}">
+  <page-wrapper refresherEnabled="{{true}}" refreshing="{{refreshing}}" bind:refresh="onSceneRefresh" currentTheme="{{currentTheme}}" themeMode="{{themeMode}}" pageIcon="{{pageIcon}}" pageText="{{pageText}}">
     <!-- 首页内容插槽 -->
     <view slot="page-content">
       <view class="title">选择场景</view>

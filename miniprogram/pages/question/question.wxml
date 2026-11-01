@@ -22,7 +22,7 @@
                   <t-icon name="hourglass" size="40rpx" />
                 </view>
                 <view class="count-down-number {{countDownUrgent ? 'urgent' : ''}}">
-                  <t-count-down time="{{ time }}" format="ss" bind:change="onCountDownChange"
+                  <t-count-down id="question-countdown" auto-start="{{false}}" time="{{ time }}" format="ss" bind:change="onCountDownChange"
                     bind:finish="onCountDownFinish" />
                 </view>
                 <text class="count-down-suffix">s</text>
@@ -90,10 +90,10 @@
 
             <view class="btn-group">
               <t-button size="large" shape="round"
-                class="action-button-slot" t-class="cancel-btn" bind:tap="onBtnSelect"
+                hover-class="none" class="action-button-slot" t-class="cancel-btn" bind:tap="onBtnSelect"
                 data-btn="cancel">取消</t-button>
               <t-button size="large" shape="round" disabled="{{!canSubmitAI}}"
-                class="action-button-slot" t-class="ai-button" bind:tap="onBtnSelect"
+                hover-class="none" class="action-button-slot" t-class="ai-button" bind:tap="onBtnSelect"
                 data-btn="ai">AI评分</t-button>
             </view>
           </view>
@@ -126,9 +126,9 @@
 
         <view class="btn-group">
           <t-button size="large" shape="round"
-            class="action-button-slot" t-class="cancel-btn" bind:tap="onBtnSelect"
+            hover-class="none" class="action-button-slot" t-class="cancel-btn" bind:tap="onBtnSelect"
             data-btn="cancel">取消</t-button>
-          <t-button size="large" shape="round" disabled="{{!canSubmitAI}}" class="action-button-slot" t-class="ai-button"
+          <t-button size="large" shape="round" disabled="{{!canSubmitAI}}" hover-class="none" class="action-button-slot" t-class="ai-button"
             bind:tap="onBtnSelect" data-btn="ai">AI评分</t-button>
         </view>
 
@@ -143,8 +143,5 @@
   <common-dialog id="quiz-summary-dialog" />
   <common-dialog id="image-result-dialog" />
 
-  <t-dialog t-class="info-dialog" t-class-confirm="info-dialog-confirm-btn"
-    t-class-cancel="info-dialog-cancel-btn" data-type="{{confirmType}}" visible="{{showConfirm}}" title="{{title}}"
-    content="{{content}}" confirm-btn="确认" cancel-btn="{{showCancel ? cancelBtn : null}}" bind:confirm="onConfirm"
-    bind:cancel="onCancel" />
+  <common-dialog id="return-confirm-dialog" />
 </view>

@@ -226,15 +226,20 @@
 .record-btn {
   width: 100%;
   background: var(--bg-input);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, var(--border-light));
   border-radius: var(--radius-full);
   padding: 0 20rpx;
-  min-height: 96rpx;
+  height: 96rpx;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12rpx;
   transition: all 0.2s ease;
+}
+
+.theme-dark .record-btn {
+  border: none;
 }
 
 .record-btn:active {
@@ -313,9 +318,6 @@
   font-size: 32rpx !important;
 }
 
-.cancel-btn:active {
-  background-color: var(--border-light) !important;
-}
 
 /* 与 common-dialog 的确定按钮保持一致。 */
 .ai-button {
@@ -524,4 +526,17 @@
 .info-dialog-cancel-btn .t-button__content {
   color: var(--text-secondary) !important;
   font-size: 32rpx !important;
+}
+
+/* 按钮点击不变色、不缩放、不显示按压遮罩。 */
+.cancel-btn,
+.ai-button,
+.info-dialog-confirm-btn,
+.info-dialog-cancel-btn {
+  transition: none !important;
+  transform: none !important;
+}
+.info-dialog-confirm-btn::before,
+.info-dialog-cancel-btn::before {
+  display: none !important;
 }

@@ -39,6 +39,8 @@ Component({
   },
 
   properties: {
+    refresherEnabled: { type: Boolean, value: false },
+    refreshing: { type: Boolean, value: false },
     currentTheme: {
       type: String,
       value: "light",
@@ -97,6 +99,9 @@ Component({
   },
 
   methods: {
+    onContentRefresh() {
+      this.triggerEvent("refresh");
+    },
     // swiper切换事件
     onSwiperChange(e) {
       const index = e.detail.current;

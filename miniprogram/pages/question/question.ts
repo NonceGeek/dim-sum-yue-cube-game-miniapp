@@ -41,6 +41,9 @@ Page({
     isCorrect: false,
     resultMessage: "",
     correctCount: 0,
+    contextResults: {} as Record<number, boolean>,
+    contextRemainingMs: {} as Record<number, number>,
+    contextElapsedByQuestion: {} as Record<number, number>,
     quizFinished: false,
     // 倒计时
     time: 15 * 1000,
@@ -71,6 +74,8 @@ Page({
     // 当前音频播放来源："" 未播放 | "oss" 题目音频 | "record" 录音回放
     playingSource: "",
     // 答题时间统计
+    soundAnswerElapsedMs: 0, // 识字辨音累计实际作答时间
+    contextAnswerElapsedMs: 0, // 语境填空已累计的实际作答时间
     questionStartTime: 0, // 当前题目开始答题的时间戳（毫秒）
     // AI评分按钮是否可用
     canSubmitAI: false,
@@ -158,6 +163,8 @@ Page({
           this.setData({
             countDownRunning: true,
             questionStartTime: Date.now(),
+            contextAnswerElapsedMs: 0,
+            soundAnswerElapsedMs: 0,
           }, () => {
             this.selectComponent("#question-countdown")?.start();
           });
@@ -171,7 +178,20 @@ Page({
     this.selectComponent("#question-countdown")?.pause();
     console.log("dddd:", e.currentTarget.dataset.index);
     const index = e.currentTarget.dataset.index;
-    this.setData({ selectedIndex: index, countDownRunning: false, countDownHandled: true }, () => {
+    const segmentTime = this.data.questionStartTime > 0
+      ? Math.max(0, Date.now() - this.data.questionStartTime)
+      : 0;
+    this.setData({
+      selectedIndex: index,
+      countDownRunning: false,
+      countDownHandled: true,
+      contextAnswerElapsedMs: this.data.contextAnswerElapsedMs + segmentTime,
+      contextElapsedByQuestion: {
+        ...this.data.contextElapsedByQuestion,
+        [this.data.currentIndex]: this.data.contextAnswerElapsedMs + segmentTime,
+      },
+      questionStartTime: 0,
+    }, () => {
       this.submitAnswer();
     });
   },
@@ -214,6 +234,7 @@ Page({
   // 提交答案
   onCloseDialogAndNextQuestion() {
     if (this.data.scene === "context" && this.data.showResultDialog) {
+      const canRetry = (this.data.contextRemainingMs[this.data.currentIndex] ?? 15000) > 0;
       if (this.data.currentIndex + 1 >= this.data.totalCount) {
         if (this.resultTimer !== undefined) {
           clearTimeout(this.resultTimer);
@@ -226,12 +247,11 @@ Page({
         this.selectComponent("#context-result-dialog").open({
           title: "答题结果",
           content: this.data.resultMessage,
-          showCancel: true,
-          cancelText: "返回",
+          showCancel: canRetry,
+          cancelText: "再次尝试",
           confirmText: "查看结果",
           onCancel: () => {
-            this.setData({ showResultDialog: false });
-            wx.navigateBack();
+            this.retryFirstWrongContextQuestion();
           },
           onConfirm: () => {
             this.showQuizSummary();
@@ -242,12 +262,11 @@ Page({
       this.selectComponent("#context-result-dialog").open({
         title: "答题结果",
         content: this.data.resultMessage,
-        showCancel: true,
-        cancelText: "返回",
+        showCancel: canRetry,
+        cancelText: "再次尝试",
         confirmText: this.data.currentIndex + 1 >= this.data.totalCount ? "确定" : "下一题",
         onCancel: () => {
-          this.setData({ showResultDialog: false });
-          wx.navigateBack();
+          this.retryFirstWrongContextQuestion();
         },
         onConfirm: () => { this.onResultConfirm(); },
       });
@@ -258,6 +277,38 @@ Page({
       this.resultTimer = undefined;
       this.onResultConfirm();
     }, 2000);
+  },
+
+  retryFirstWrongContextQuestion() {
+        if ((this.data.contextRemainingMs[this.data.currentIndex] ?? 15000) <= 0) return;
+    const wrongIndex = this.data.questions.findIndex((_, index) =>
+      this.data.contextResults[index] === false && (this.data.contextRemainingMs[index] ?? 15000) > 0);
+    // 尚无错题时，重新尝试当前题。
+    const index = wrongIndex >= 0 ? wrongIndex : this.data.currentIndex;
+    if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
+    this.resultTimer = undefined;
+    this.selectComponent("#question-countdown")?.pause();
+    this.setData({
+      showResultDialog: false,
+      quizFinished: false,
+      currentIndex: index,
+      currentQuestion: this.data.questions[index],
+      selectedIndex: null,
+      progressPercent: Math.round(((index + 1) / this.data.totalCount) * 100),
+      countDownRunning: false,
+      countDownHandled: true,
+      countDownUrgent: false,
+      time: this.data.contextRemainingMs[index] ?? 15000,
+      contextAnswerElapsedMs: this.data.contextElapsedByQuestion[index] ?? 0,
+      questionStartTime: 0,
+    }, () => {
+      // 恢复该题剩余时间；即使 time 未变化也同步组件内部状态。
+      const countdown = this.selectComponent("#question-countdown");
+      countdown?.reset();
+      this.setData({ countDownHandled: false, countDownRunning: true, questionStartTime: Date.now() }, () => {
+        countdown?.start();
+      });
+    });
   },
 
   showQuizSummary() {
@@ -288,6 +339,15 @@ Page({
   async submitAnswer() {
     const { scene } = this.data;
     if (this.data.submittingAnswer || this.data.showResultDialog || this.data.quizFinished) return;
+    if (scene === "sound") {
+      const segmentTime = this.data.questionStartTime > 0
+        ? Math.max(0, Date.now() - this.data.questionStartTime)
+        : 0;
+      this.setData({
+        soundAnswerElapsedMs: this.data.soundAnswerElapsedMs + segmentTime,
+        questionStartTime: 0,
+      });
+    }
     this.setData({ submittingAnswer: true });
     if (scene === "context") wx.showLoading({ title: "提交中...", mask: true });
     try {
@@ -329,6 +389,7 @@ Page({
               selectedIndex: null,
               countDownHandled: false,
               countDownRunning: true,
+              questionStartTime: Date.now(),
             }, () => {
               this.selectComponent("#question-countdown")?.start();
             });
@@ -343,12 +404,15 @@ Page({
     }
   },
   async doContextSceneSubmit() {
-    const { currentQuestion, selectedIndex, questionStartTime, correctCount } =
+    const { currentQuestion, selectedIndex, questionStartTime } =
       this.data;
     if (selectedIndex === null || !currentQuestion.id) {
       throw new Error("缺少题目或所选答案");
     }
-    const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
+    const activeSegmentMs = questionStartTime > 0
+      ? Math.max(0, Date.now() - questionStartTime)
+      : 0;
+    const answerTime = Math.round((this.data.contextAnswerElapsedMs + activeSegmentMs) / 1000);
     const params = {
       mode: "context",
       question_id: currentQuestion.id,
@@ -372,12 +436,14 @@ Page({
       const isCorrect = hasServerResult
         ? submitAnswer.is_correct
         : selectedIndex === currentQuestion.answerIndex;
-      const newCorrectCount = isCorrect ? correctCount + 1 : correctCount;
+      const contextResults = { ...this.data.contextResults, [this.data.currentIndex]: isCorrect };
+      const newCorrectCount = Object.values(contextResults).filter(Boolean).length;
       this.setData({
         showResultDialog: true,
         isCorrect,
         resultMessage: isCorrect ? "恭喜，答对了！" : "再接再厉！",
         correctCount: newCorrectCount,
+        contextResults,
       });
     }
   },
@@ -387,10 +453,10 @@ Page({
       title: this.data.resultCanAdvance ? "发音评分" : "评分暂未完成",
       content: this.data.resultMessage,
       showCancel: true,
-      cancelText: "关闭",
+      cancelText: "再次尝试",
       confirmText: this.data.currentIndex + 1 >= this.data.totalCount ? "确定" : "下一题",
       onCancel: () => {
-        this.setData({ showResultDialog: false });
+        this.setData({ showResultDialog: false, questionStartTime: Date.now() });
       },
       onConfirm: () => {
         this.onResultConfirm();
@@ -399,9 +465,9 @@ Page({
   },
 
   async doSoundSceneSubmit() {
-    const { currentQuestion, scene, url, questionStartTime } = this.data;
+    const { currentQuestion, scene, url, soundAnswerElapsedMs } = this.data;
     const id = currentQuestion.id;
-    const answerTime = Math.round((Date.now() - questionStartTime) / 1000);
+    const answerTime = Math.round(soundAnswerElapsedMs / 1000);
     const params = {
       mode: scene,
       question_id: id,
@@ -467,7 +533,7 @@ Page({
       title: "答题结果",
       content: this.data.resultMessage,
       showCancel: true,
-      cancelText: "关闭",
+      cancelText: "再次尝试",
       confirmText: "确认",
       onCancel: () => {
         this.setData({ showResultDialog: false });
@@ -535,6 +601,8 @@ Page({
           this.setData({
             countDownRunning: true,
             questionStartTime: Date.now(),
+            contextAnswerElapsedMs: 0,
+            soundAnswerElapsedMs: 0,
           }, () => {
             this.selectComponent("#question-countdown")?.start();
           });
@@ -547,6 +615,8 @@ Page({
     const { countDownUrgent, countDownHandled } = this.data;
     // 防止 finish 已处理后继续触发更新
     if (countDownHandled) return;
+    const remaining = Math.max(0, e.detail.ss * 1000 + (e.detail.SSS || 0));
+    this.setData({ contextRemainingMs: { ...this.data.contextRemainingMs, [this.data.currentIndex]: remaining } });
     // 最后3秒变紧急状态，只在状态真正变化时更新
     if (remainingMs <= 3 && remainingMs > 0 && !countDownUrgent) {
       this.setData({ countDownUrgent: true });
@@ -558,6 +628,14 @@ Page({
   onCountDownFinish() {
     const { countDownHandled } = this.data;
     if (countDownHandled || !this.data.countDownRunning || this.data.submittingAnswer || this.data.quizFinished || this.data.showConfirm) return;
+    if (this.data.scene === "context") {
+      const contextResults = { ...this.data.contextResults, [this.data.currentIndex]: false };
+      this.setData({
+        contextResults,
+        correctCount: Object.values(contextResults).filter(Boolean).length,
+        contextRemainingMs: { ...this.data.contextRemainingMs, [this.data.currentIndex]: 0 },
+      });
+    }
     this.setData(
       {
         countDownHandled: true,

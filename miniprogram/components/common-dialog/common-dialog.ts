@@ -78,6 +78,14 @@ Component({
       });
     },
 
+    updateConfirmText(text: string) {
+      if (!this.data.visible || !this.data.confirmBtn) return;
+      this.setData({
+        confirmText: text,
+        confirmBtn: { ...this.data.confirmBtn, content: text },
+      });
+    },
+
     // 供自动消失的提示使用，不触发按钮回调。
     close() {
       (this as any)._dialogSettled = true;

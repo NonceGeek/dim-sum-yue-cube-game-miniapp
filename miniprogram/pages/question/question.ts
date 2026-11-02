@@ -107,6 +107,8 @@ Page({
   },
 
   onHide() {
+    if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
+    this.resultTimer = undefined;
     this.stopQuestionAudio();
     this.audioPageDisposed = true;
   },
@@ -231,10 +233,28 @@ Page({
     }
   },
 
+  startCorrectAnswerAutoNext() {
+    if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
+    const index = this.data.currentIndex;
+    const deadline = Date.now() + 5000;
+    const tick = () => {
+      this.resultTimer = undefined;
+      if (!this.data.showResultDialog || this.data.currentIndex !== index || this.data.quizFinished) return;
+      const seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      if (seconds === 0) {
+        this.onResultConfirm();
+        return;
+      }
+      this.selectComponent("#context-result-dialog").updateConfirmText(`下一题 (${seconds}s)`);
+      this.resultTimer = setTimeout(tick, 1000);
+    };
+    tick();
+  },
+
   // 提交答案
   onCloseDialogAndNextQuestion() {
     if (this.data.scene === "context" && this.data.showResultDialog) {
-      const canRetry = (this.data.contextRemainingMs[this.data.currentIndex] ?? 15000) > 0;
+      const canRetry = !this.data.isCorrect && (this.data.contextRemainingMs[this.data.currentIndex] ?? 15000) > 0;
       if (this.data.currentIndex + 1 >= this.data.totalCount) {
         if (this.resultTimer !== undefined) {
           clearTimeout(this.resultTimer);
@@ -270,6 +290,7 @@ Page({
         },
         onConfirm: () => { this.onResultConfirm(); },
       });
+      if (this.data.isCorrect) this.startCorrectAnswerAutoNext();
       return;
     }
     if (this.resultTimer !== undefined) clearTimeout(this.resultTimer);
